@@ -690,7 +690,6 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
 This is an auto-generated function, do not modify its content directly, use
 Emacs customize menu instead.
 This function is called at the very end of Spacemacs initialization."
-<<<<<<< HEAD
   (custom-set-variables
    ;; custom-set-variables was added by Custom.
    ;; If you edit it by hand, you could mess it up, so be careful.
@@ -764,22 +763,3 @@ This function is called at the very end of Spacemacs initialization."
    ;; If there is more than one, they won't work right.
    )
   )
-=======
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   '("01f347a923dd21661412d4c5a7c7655bf17fb311b57ddbdbd6fce87bd7e58de6" "9af2b1c0728d278281d87dc91ead7f5d9f2287b1ed66ec8941e97ab7a6ab73c0" "d2ab3d4f005a9ad4fb789a8f65606c72f30ce9d281a9e42da55f7f4b9ef5bfc6" "832a3471e6e56c42ae430771a14c65b0006412bb8a0eb94fcc4a604587e20b80" "daa27dcbe26a280a9425ee90dc7458d85bd540482b93e9fa94d4f43327128077" "c20728f5c0cb50972b50c929b004a7496d3f2e2ded387bf870f89da25793bb44" default))
- '(org-agenda-files '("~/Documents/dump/20260121.org"))
- '(package-selected-packages
-   '(auto-yasnippet bundler inf-ruby company-auctex company-math company-reftex flycheck-elsa flycheck-package package-lint flycheck-pos-tip pos-tip helm-c-yasnippet helm-company helm-lsp lsp-latex consult lsp-origami origami lsp-ui minitest mixed-pitch org-appear org-modern rake rspec-mode rubocop rubocopfmt ruby-hash-syntax ruby-refactor ruby-test-mode ruby-tools yasnippet-snippets csv-mode sqlite3 pdf-view-restore pdf-tools tablist auctex-latexmk evil-tex auctex math-symbol-lists dactyl-mode vimrc-mode code-review emojify a eat esh-help eshell-prompt-extras eshell-z evil-org git-link git-messenger git-modes git-timemachine gitignore-templates gnuplot helm-ls-git helm-org-rifle js2-refactor yasnippet json-mode json-navigator json-reformat json-snatcher multi-term multi-vterm xref org-cliplink org-contrib org-download org-mime org-pomodoro alert log4e gntp org-present org-projectile org-project-capture org-category-capture orgit ghub closql emacsql treepy shell-pop smeargle terminal-here treemacs-magit with-editor magit-section llama orgit-forge yaml-mode kanagawa-themes blacken code-cells company-anaconda anaconda-mode cython-mode dap-mode lsp-docker lsp-treemacs bui helm-cscope helm-pydoc importmagic epc ctable concurrent deferred live-py-mode lsp-pyright nose pet pip-requirements pipenv load-env-vars pippel poetry py-isort pydoc pyenv-mode pythonic pylookup python-pytest pyvenv ruff-format reformatter sphinx-doc uv xcscope yapfify magit add-node-modules-path yaml lsp-mode flycheck ggtags impatient-mode htmlize import-js grizzl js-doc multiple-cursors livid-mode nodejs-repl npm-mode prettier-js skewer-mode js2-mode simple-httpd tern web-beautify org-rich-yank vterm-toggle vterm company-emoji company edit-indirect emoji-cheat-sheet-plus gh-md markdown-toc markdown-mode valign vmd-mode ace-link all-the-icons auto-compile auto-highlight-symbol centered-cursor-mode clean-aindent-mode column-enforce-mode define-word dired-quick-sort disable-mouse drag-stuff dumb-jump elisp-def elisp-demos elisp-slime-nav emr clang-format list-utils eval-sexp-fu evil-cleverparens paredit evil-lion evil-mc evil-textobj-line evil-tutor eyebrowse fancy-battery google-translate helm-comint helm-descbinds helm-make helm-mode-manager helm-org helm-projectile helm-purpose helm-xref highlight-indentation highlight-numbers parent-mode hl-todo hungry-delete indent-guide link-hint multi-line shut-up open-junk-file overseer pkg-info epl paradox spinner password-generator popwin quickrun restart-emacs spaceline powerline string-edit-at-point string-inflection symon treemacs-icons-dired treemacs-persp persp-mode treemacs-projectile treemacs cfrs ht pfuture uuidgen vi-tilde-fringe volatile-highlights window-purpose imenu-list winum writeroom-mode visual-fill-column dotenv-mode ws-butler which-key wgrep vundo undo-fu-session transient toc-org term-cursor symbol-overlay spacemacs-whitespace-cleanup spacemacs-purpose-popwin space-doc rainbow-delimiters projectile posframe popup pcre2el page-break-lines org-superstar nameless macrostep lorem-ipsum inspector info+ hydra hybrid-mode holy-mode highlight-parentheses hide-comnt helm-swoop helm-ag golden-ratio expand-region evil-visualstar evil-visual-mark-mode evil-unimpaired evil-surround evil-numbers evil-nerd-commenter evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-goggles evil-exchange evil-evilified-state evil-escape evil-args evil-anzu editorconfig diminish devdocs avy-jump-helm-line aggressive-indent ace-window)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
-)
->>>>>>> 04e5829 (命名規則の変更，binの追加)
