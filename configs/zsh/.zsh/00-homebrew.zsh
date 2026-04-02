@@ -3,7 +3,9 @@
 # ========================================
 typeset -U path PATH
 
-# Homebrew の環境変数を読み込む（Linuxbrew/macOS 両対応）
+# Homebrew の環境変数を読み込む
+# Linuxbrew/macOSのいずれでもPATHが通るようにする
+# 後続のプログラムに不具合が発生するので、一番最初にPATHを通す
 if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
   eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv zsh)"
 elif [ -x /opt/homebrew/bin/brew ]; then

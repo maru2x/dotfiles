@@ -6,13 +6,6 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
-
 # ========================================
 # 機密情報（別ファイルから読み込み）
 # ========================================
@@ -38,8 +31,8 @@ if [ -d "$HOME/dotfiles-th/.zsh" ]; then
 fi
 
 # ========================================
-# iTerm2起動時に自動でtmuxセッションへ
+# zsh起動時に自動でtmuxセッションへ
 # ========================================
-if [ -z "$TMUX" ] && [ "$TERM_PROGRAM" = "iTerm.app" ]; then
+if [ -z "$TMUX" ]; then
   exec tmux new-session -A -s main
 fi

@@ -57,7 +57,6 @@ This function should only modify configuration layer settings."
      multiple-cursors
      org
      (shell :variables
-            shell-default-shell 'vterm
             shell-default-height 30
             shell-default-position 'bottom)
      ;; spell-checking
@@ -438,7 +437,7 @@ It should only modify the values of Spacemacs settings."
    ;;   :size-limit-kb 1000)
    ;; When used in a plist, `visual' takes precedence over `relative'.
    ;; (default nil)
-   dotspacemacs-line-numbers nil
+   dotspacemacs-line-numbers 'relative
 
    ;; Code folding method. Possible values are `evil', `origami' and `vimish'.
    ;; (default 'evil)
@@ -587,10 +586,42 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
     (setenv "PATH" (concat path ":" (getenv "PATH")))
     (add-to-list 'exec-path path))
 
+  ;; デフォルトで centered-cursor-mode を有効化
+  (global-centered-cursor-mode 1)
+
+  ;; indent-guide・truncate-lines・smartparens をデフォルトで有効化
+  (add-hook 'prog-mode-hook #'highlight-indentation-mode)
+  (add-hook 'text-mode-hook #'highlight-indentation-mode)
+  (setq-default truncate-lines t)
+  (smartparens-global-mode t)
+
+  ;; insert state で Emacs 移動系キーバインドを使えるようにする
+  (with-eval-after-load 'evil
+    (define-key evil-insert-state-map (kbd "C-a") 'move-beginning-of-line)
+    (define-key evil-insert-state-map (kbd "C-e") 'move-end-of-line)
+    (define-key evil-insert-state-map (kbd "C-f") 'forward-char)
+    (define-key evil-insert-state-map (kbd "C-b") 'backward-char)
+    (define-key evil-insert-state-map (kbd "C-p") 'previous-line)
+    (define-key evil-insert-state-map (kbd "C-n") 'next-line)
+    (define-key evil-insert-state-map (kbd "C-d") 'delete-char)
+    (define-key evil-insert-state-map (kbd "C-h") 'backward-delete-char))
+
+  ;; company の補完候補を C-j/C-k で選択
+  (with-eval-after-load 'company
+    (define-key company-active-map (kbd "C-j") 'company-select-next)
+    (define-key company-active-map (kbd "C-k") 'company-select-previous))
+
+  ;; ibuffer を evilified-state で操作できるようにする（Dired と同じ操作感）
+  (with-eval-after-load 'ibuffer
+    (evilified-state-evilify-map ibuffer-mode-map
+      :mode ibuffer-mode))
+
   ;; insert stateで "jj" を押すとESCに戻る
   (with-eval-after-load 'evil-escape
     (setq-default evil-escape-key-sequence "jj"
                   evil-escape-delay 0.2)
+    (add-to-list 'evil-escape-inhibit-functions
+                 (lambda () (not (evil-insert-state-p))))
     (evil-escape-mode 1))
 
   ;; Projectile除外設定
@@ -603,21 +634,8 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
     (add-to-list 'projectile-globally-ignored-directories "public/assets")
     (add-to-list 'projectile-globally-ignored-directories ".taskmaster"))
 
-  "Open a new vterm buffer, falling back to the source if needed."
-  (defun my/multi-vterm-new ()
-    (interactive)
-    (require 'multi-vterm nil t)
-    (unless (fboundp 'multi-vterm)
-      (let ((lib (locate-library "multi-vterm")))
-        (when lib
-          (load (concat (file-name-sans-extension lib) ".el") nil t))))
-    (if (fboundp 'multi-vterm)
-        (call-interactively 'multi-vterm)
-      (user-error "multi-vterm is not available")))
-  (spacemacs/declare-prefix "ot" "vterm")
   (spacemacs/set-leader-keys
-    "ota" 'vterm
-    "otn" 'my/multi-vterm-new
+    "bi" 'ibuffer
     "oc" 'org-capture
     "oa" 'org-agenda
     "ol" 'org-store-link)

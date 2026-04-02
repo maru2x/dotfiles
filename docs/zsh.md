@@ -1,252 +1,77 @@
 # Zsh 設定ガイド
 
-`configs/zsh/.zsh/` にはモジュール化された zsh 設定ファイルが含まれています。
-
 ## ファイル構成
 
 ```
-~/.zshrc                      # メイン設定ファイル（各モジュールを読み込む）
-~/.zsh/
-  ├── aliases.zsh             # 基本的なエイリアス
-  ├── docker.zsh              # Docker/Rails関連コマンド
-  ├── functions.zsh           # カスタム関数（memo など）
-  ├── vim-mode.zsh            # Vi-mode設定
-  ├── claude.zsh              # Claude Code + Tmux統合
-  └── zshrc-utils.zsh         # 設定管理ユーティリティ
+configs/zsh/
+  .zshrc                  # エントリポイント（モジュール読み込み・tmux自動起動）
+  .zsh/
+    00-homebrew.zsh        # Homebrew PATH 設定
+    01-ohmyzsh.zsh         # Oh My Zsh・プラグイン・p10k テーマ
+    02-techouse.zsh        # Techouse固有設定（rbenv・AWS・プロジェクト）
+    03-other.zsh            # エイリアス・環境変数・fzf・ez・compinit
 ```
 
-## 基本コマンド
+## tmux
 
-### 設定ファイルの編集
+zsh 起動時に自動で tmux セッション `main` にアタッチします。
 
 ```bash
-# fzf でファイルを選択して編集（プレビュー付き）
-ez
-
-# または個別エイリアスで直接開く
-ezm             # ~/.zshrc（メイン設定）
-eza             # aliases.zsh
-ezd             # docker.zsh
-ezf             # functions.zsh
-ezv             # vim-mode.zsh
-ezc             # claude.zsh
-ezu             # zshrc-utils.zsh
-ezall           # 全てのファイルを開く
+# セッションがなければ新規作成、あれば再接続
+exec tmux new-session -A -s main
 ```
 
-### 設定のリロード
+## 設定管理
 
 ```bash
-rz              # source ~/.zshrc（全モジュールを再読み込み）
+ez      # fzf で設定ファイルを選択して編集
+rz      # ~/.zshrc をリロード
+cdd     # dotfiles ディレクトリへ移動
 ```
 
-## Claude Code + Tmux
+## fzf
 
-### Claude Code を起動
+| キー | 内容 |
+|------|------|
+| `Ctrl+T` | ファイル検索（bat プレビュー付き） |
+| `Ctrl+R` | コマンド履歴検索 |
+| `Alt+C` | ディレクトリ検索して移動 |
+
+## エイリアス一覧
+
+### 汎用
 
 ```bash
-# 新しいセッションを作成（セッション名は自動生成）
-claude
-
-# セッション名を指定して作成
-claude my-project
-claude api-work
-claude frontend-dev
+vim / vi        # nvim
 ```
 
-### 既存セッションに接続
+### Docker
 
 ```bash
-# fzf でセッションを選択（プレビュー付き）
-claude-attach
-ca              # 短縮形
-
-# セッション一覧を表示
-cls
-```
-
-### Tmux 基本操作
-
-```bash
-# セッションからデタッチ（切断）
-Ctrl+b, d
-
-# セッション一覧
-tmux list-sessions
-tmux ls
-
-# 特定のセッションに直接接続
-tmux attach -t claude-my-project
-```
-
-### 実際の使用例
-
-```bash
-# 1. API開発用のセッションを作成
-claude api-development
-# → tmux セッション内で Claude Code が起動
-
-# 作業中...
-# Ctrl+b, d でデタッチ
-
-# 2. フロントエンド開発用のセッションを作成
-claude frontend-work
-# → 別のセッション内で Claude Code が起動
-
-# 3. 後で API開発セッションに戻る
-ca
-# → fzf でセッションを選択
-# → 最後の50行がプレビュー表示される
-# → Enter で接続
-```
-
-## fzf（ファジー検索）
-
-### キーバインド
-
-```bash
-Ctrl+T          # カレントディレクトリ以下のファイルを検索
-Ctrl+R          # コマンド履歴を検索
-Alt+C           # ディレクトリを検索して移動
-```
-
-### 検索構文
-
-```bash
-# 前方一致
-^music
-
-# 後方一致
-.mp3$
-
-# 完全一致
-'wild
-
-# OR検索
-mp3 | mp4
-
-# AND検索（スペース区切り）
-music .mp3
-
-# NOT検索
-!.mp4
-```
-
-### fzf の操作方法
-
-- **矢印キー / Ctrl+j/k**: 上下移動
-- **Enter**: 選択して確定
-- **Esc / Ctrl+c**: キャンセル
-- **Tab**: 複数選択（マルチセレクトモード時）
-
-## メモ管理
-
-```bash
-# 引数なし：memoディレクトリでnvimを開く
-memo
-
-# 名前付きメモ
-memo work           # ~/memo/work.txt
-memo ideas          # ~/memo/ideas.txt
-
-# 日付付きメモ
-memo -d             # ~/memo/2025-11-14.txt
-memo --date         # 同上
-
-# memoディレクトリへ移動
-cd memo
-```
-
-## Docker関連
-
-```bash
-# Docker Compose
 dc              # docker compose
 dcud            # docker compose up -d
 dcdu            # docker compose down && up -d
-
-# Rails（Docker経由）
-dap             # docker attach（Pumaに接続）
-dr              # docker compose exec puma bundle exec rails
-dmb             # マイグレーション実行
-bers            # RSpec実行
 ```
 
-## Vi-mode
-
-zsh は Vi-mode が有効になっています。
-
-### モード
-
-- **インサートモード**: 通常の入力モード（バーカーソル）
-- **ノーマルモード**: Vim風の操作モード（ブロックカーソル）
-
-### キーバインド
-
-#### インサートモード
-```bash
-Esc             # ノーマルモードへ切り替え
-Ctrl+A          # 行頭へ移動
-Ctrl+E          # 行末へ移動
-Ctrl+F          # 右へ1文字
-Ctrl+B          # 左へ1文字
-Ctrl+D          # カーソル位置の文字を削除
-Ctrl+K          # カーソルから行末まで削除
-Ctrl+W          # 単語削除
-Ctrl+U          # カーソルから行頭まで削除
-Ctrl+R          # 履歴検索（fzf）
-Ctrl+P/N        # 前/次のコマンド
-```
-
-#### ノーマルモード
-```bash
-i               # インサートモードへ
-h/j/k/l         # 左/下/上/右
-0/$             # 行頭/行末
-w/b             # 次/前の単語
-dd              # 行削除
-cc              # 行削除してインサートモード
-```
-
-## その他のエイリアス
+### Techouse プロジェクト
 
 ```bash
-vim             # nvim
-vi              # nvim
-```
+# ディレクトリ移動
+cdw             # CHWorkforce
+cdc             # CHCentral
 
-## トラブルシューティング
+# プロジェクト起動・停止
+wup             # CHWorkforce 起動
+cup             # CHCentral + CHWorkforce 起動
+wdn             # CHWorkforce 停止
+cdn             # 両プロジェクト停止
 
-### 設定が反映されない
+# SSH
+sshneptune      # CHWorkforce 内部 Neptune
+sshw            # CHWorkforce DB
+sshci           # CHCentral int DB（AWS SSO）
+sshcs           # CHCentral stg DB（AWS SSO）
 
-```bash
-rz        # source ~/.zshrc
-
-# または新しいシェルを起動
-exec zsh
-```
-
-### コマンドが見つからない
-
-```bash
-type <command>   # コマンドの定義場所を確認
-```
-
-### fzf が動かない
-
-```bash
-which fzf        # インストール確認
-
-# インストールされていない場合
-brew install fzf
-$(brew --prefix)/opt/fzf/install
-```
-
-### tmux セッションが残っている
-
-```bash
-tmux ls                          # 全セッション一覧
-tmux kill-session -t <name>      # 特定のセッションを終了
-tmux kill-server                 # 全セッションを終了（注意）
-cls                              # claude- セッションだけを一覧表示
+# AWS
+bed             # aws sso login (bedrock profile)
 ```
