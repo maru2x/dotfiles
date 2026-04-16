@@ -1,6 +1,6 @@
 # techouse-inc リポジトリ用設定
 [core]
-	sshCommand = ssh -i ~/.ssh/id_ed25519_techouse -o IdentitiesOnly=yes -F /dev/null
+	sshCommand = ssh -i ~/.ssh/id_ed25519_techouse -F /dev/null
 
 [user]
 	name = shujimurase
