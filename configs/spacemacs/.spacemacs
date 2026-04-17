@@ -32,7 +32,8 @@ This function should only modify configuration layer settings."
 
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   '(sql
+   '(html
+     sql
      (ruby :variables
            ruby-backend 'lsp
            ruby-lsp-server 'solargraph)
@@ -595,6 +596,14 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
   (setq-default truncate-lines t)
   (smartparens-global-mode t)
 
+  ;; markdown-mode のパフォーマンス改善
+  ;; valign はCJK文字を含む大きなテーブルで編集のたびにピクセル計算が走り極端に重くなるため無効化
+  (with-eval-after-load 'markdown-mode
+    (add-hook 'markdown-mode-hook
+              (lambda ()
+                (when (bound-and-true-p valign-mode) (valign-mode -1))
+                (setq-local display-line-numbers nil))))
+
   ;; insert state で Emacs 移動系キーバインドを使えるようにする
   (with-eval-after-load 'evil
     (define-key evil-insert-state-map (kbd "C-a") 'move-beginning-of-line)
@@ -727,53 +736,56 @@ This function is called at the very end of Spacemacs initialization."
          auto-yasnippet avy-jump-helm-line blacken bui bundler
          centered-cursor-mode cfrs chruby clang-format clean-aindent-mode closql
          code-cells code-review column-enforce-mode company company-anaconda
-         company-auctex company-emoji company-math company-reftex concurrent
-         consult ctable cython-mode dactyl-mode dap-mode deferred define-word
-         devdocs diminish dired-quick-sort disable-mouse dotenv-mode drag-stuff
-         dumb-jump eat edit-indirect editorconfig elisp-def elisp-demos
-         elisp-slime-nav emacsql emoji-cheat-sheet-plus emojify emr enh-ruby-mode
-         epc epl esh-help eshell-prompt-extras eshell-z eval-sexp-fu evil-anzu
-         evil-args evil-cleverparens evil-escape evil-evilified-state
-         evil-exchange evil-goggles evil-iedit-state evil-indent-plus evil-lion
-         evil-lisp-state evil-matchit evil-mc evil-nerd-commenter evil-numbers
-         evil-org evil-surround evil-textobj-line evil-tutor evil-unimpaired
+         company-auctex company-emoji company-math company-reftex company-web
+         concurrent consult counsel counsel-css ctable cython-mode dactyl-mode
+         dap-mode deferred define-word devdocs diminish dired-quick-sort
+         disable-mouse dotenv-mode drag-stuff dumb-jump eat edit-indirect
+         editorconfig elisp-def elisp-demos elisp-slime-nav emacsql emmet-mode
+         emoji-cheat-sheet-plus emojify emr enh-ruby-mode epc epl esh-help
+         eshell-prompt-extras eshell-z eval-sexp-fu evil-anzu evil-args
+         evil-cleverparens evil-escape evil-evilified-state evil-exchange
+         evil-goggles evil-iedit-state evil-indent-plus evil-lion evil-lisp-state
+         evil-matchit evil-mc evil-nerd-commenter evil-numbers evil-org
+         evil-surround evil-textobj-line evil-tutor evil-unimpaired
          evil-visual-mark-mode evil-visualstar expand-region eyebrowse
          fancy-battery flycheck flycheck-elsa flycheck-package flycheck-pos-tip
          ggtags gh-md ghub git-link git-messenger git-modes git-timemachine
          gitignore-templates gntp gnuplot golden-ratio google-translate grizzl
-         helm-ag helm-c-yasnippet helm-comint helm-company helm-cscope
-         helm-descbinds helm-ls-git helm-lsp helm-make helm-mode-manager helm-org
-         helm-org-rifle helm-projectile helm-purpose helm-pydoc helm-swoop
-         helm-xref hide-comnt highlight-indentation highlight-numbers
-         highlight-parentheses hl-todo holy-mode ht htmlize hungry-delete
-         hybrid-mode hydra imenu-list impatient-mode import-js importmagic
-         indent-guide inf-ruby info+ inspector js-doc js2-mode js2-refactor
-         json-mode json-navigator json-reformat json-snatcher kanagawa-themes
-         link-hint list-utils live-py-mode livid-mode llama load-env-vars log4e
-         lorem-ipsum lsp-docker lsp-latex lsp-mode lsp-origami lsp-pyright
-         lsp-treemacs lsp-ui macrostep magit magit-section markdown-mode
-         markdown-toc minitest mixed-pitch multi-line multi-term multi-vterm
-         multiple-cursors nameless nodejs-repl nose npm-mode open-junk-file
-         org-appear org-category-capture org-cliplink org-contrib org-download
-         org-mime org-modern org-pomodoro org-present org-project-capture
-         org-projectile org-rich-yank org-superstar orgit orgit-forge origami
-         overseer package-lint page-break-lines paradox paredit parent-mode
-         password-generator pcre2el persp-mode pet pfuture pip-requirements pipenv
-         pippel pkg-info poetry popup popwin pos-tip posframe powerline
-         prettier-js projectile py-isort pydoc pyenv-mode pylookup python-pytest
-         pythonic pyvenv quickrun rainbow-delimiters rake rbenv reformatter
-         restart-emacs robe rspec-mode rubocop rubocopfmt ruby-hash-syntax
-         ruby-refactor ruby-test-mode ruby-tools ruff-format rvm shell-pop shut-up
-         simple-httpd skewer-mode smeargle space-doc spaceline
+         haml-mode helm-ag helm-c-yasnippet helm-comint helm-company helm-cscope
+         helm-css-scss helm-descbinds helm-ls-git helm-lsp helm-make
+         helm-mode-manager helm-org helm-org-rifle helm-projectile helm-purpose
+         helm-pydoc helm-swoop helm-xref hide-comnt highlight-indentation
+         highlight-numbers highlight-parentheses hl-todo holy-mode ht htmlize
+         hungry-delete hybrid-mode hydra imenu-list impatient-mode import-js
+         importmagic indent-guide inf-ruby info+ inspector ivy js-doc js2-mode
+         js2-refactor json-mode json-navigator json-reformat json-snatcher
+         kanagawa-themes link-hint list-utils live-py-mode livid-mode llama
+         load-env-vars log4e lorem-ipsum lsp-docker lsp-latex lsp-mode lsp-origami
+         lsp-pyright lsp-treemacs lsp-ui macrostep magit magit-section
+         markdown-mode markdown-toc minitest mixed-pitch multi-line multi-term
+         multi-vterm multiple-cursors nameless nodejs-repl nose npm-mode
+         open-junk-file org-appear org-category-capture org-cliplink org-contrib
+         org-download org-mime org-modern org-pomodoro org-present
+         org-project-capture org-projectile org-rich-yank org-superstar orgit
+         orgit-forge origami overseer package-lint page-break-lines paradox
+         paredit parent-mode password-generator pcre2el persp-mode pet pfuture
+         pip-requirements pipenv pippel pkg-info poetry popup popwin pos-tip
+         posframe powerline prettier-js projectile pug-mode py-isort pydoc
+         pyenv-mode pylookup python-pytest pythonic pyvenv quickrun
+         rainbow-delimiters rake rbenv reformatter restart-emacs robe rspec-mode
+         rubocop rubocopfmt ruby-hash-syntax ruby-refactor ruby-test-mode
+         ruby-tools ruff-format rvm sass-mode scss-mode shell-pop shut-up
+         simple-httpd skewer-mode slim-mode smeargle space-doc spaceline
          spacemacs-purpose-popwin spacemacs-whitespace-cleanup sphinx-doc spinner
          sql-indent sqlite3 sqlup-mode string-edit-at-point string-inflection
-         symbol-overlay symon term-cursor terminal-here tern toc-org transient
-         treemacs treemacs-icons-dired treemacs-magit treemacs-persp
-         treemacs-projectile treepy undo-fu-session uuidgen uv valign
-         vi-tilde-fringe vimrc-mode visual-fill-column vmd-mode
-         volatile-highlights vterm vterm-toggle vundo web-beautify wgrep which-key
-         window-purpose winum with-editor writeroom-mode ws-butler xcscope xref
-         yaml yaml-mode yapfify yasnippet yasnippet-snippets)))
+         swiper symbol-overlay symon tagedit term-cursor terminal-here tern
+         toc-org transient treemacs treemacs-icons-dired treemacs-magit
+         treemacs-persp treemacs-projectile treepy undo-fu-session uuidgen uv
+         valign vi-tilde-fringe vimrc-mode visual-fill-column vmd-mode
+         volatile-highlights vterm vterm-toggle vundo web-beautify
+         web-completion-data web-mode wgrep which-key window-purpose winum
+         with-editor writeroom-mode ws-butler xcscope xref yaml yaml-mode yapfify
+         yasnippet yasnippet-snippets)))
   (custom-set-faces
    ;; custom-set-faces was added by Custom.
    ;; If you edit it by hand, you could mess it up, so be careful.
