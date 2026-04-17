@@ -1,0 +1,14 @@
+# ~/.ssh/config
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_techouse
+    IdentityFile ~/.ssh/id_ed25519_sit
+    IdentitiesOnly yes
+
+# 全ホスト共通の設定
+Host *
+    ServerAliveInterval 60
+    AddKeysToAgent yes
+    UseKeychain yes
+
