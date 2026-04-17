@@ -1,14 +1,14 @@
-# ~/.ssh/config
-Host github.com
+# 会社用（techouse鍵を強制）
+Host github.com-techouse
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_techouse
-    IdentityFile ~/.ssh/id_ed25519_sit
     IdentitiesOnly yes
 
-# 全ホスト共通の設定
-Host *
-    ServerAliveInterval 60
-    AddKeysToAgent yes
-    UseKeychain yes
-
+# デフォルト（個人用を優先）
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_sit
+    IdentityFile ~/.ssh/id_ed25519_techouse
+    IdentitiesOnly yes
