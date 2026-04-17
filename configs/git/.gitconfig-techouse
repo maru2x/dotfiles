@@ -2,7 +2,3 @@
     name = shujimurase
     email = shuji.murase@techouse.jp
     signingkey = ~/.ssh/id_ed25519_techouse.pub
-
-# ここを追記：URLにtechouse-incが含まれていたら、鍵固定ホスト(github.com-techouse)にすり替える
-[url "git@github.com-techouse:techouse-inc/"]
-    insteadOf = git@github.com:techouse-inc/

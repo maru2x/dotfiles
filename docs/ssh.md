@@ -1,16 +1,16 @@
 # SSH鍵とGit設定の運用ガイド
 
-このリポジトリでは、個人用（SIT）と会社用（Techouse）の環境を、ディレクトリやリポジトリURLに応じて自動で切り替える運用を採用しています。
+このリポジトリでは、個人用（SIT）と会社用（Techouse）の環境を、リポジトリのURLに応じて自動で切り替える運用を採用しています。
 
 ## 1. 設定ファイルの役割
 
 運用の基盤となる3つの設定ファイルの役割は以下の通りです。
 
-| 設定ファイル                | 役割                                                                                                   |
-|:----------------------------|:-------------------------------------------------------------------------------------------------------|
-| **`~/.ssh/config`**         | **「ssh鍵自体の全体設定」を担当**。ssh接続でどの鍵をどういう順番で使うのか、など                       |
-| **`~/.gitconfig`**          | **「git接続のデフォルト設定と使い分け」を担当**。デフォルトの接続方式や、techouse鍵への切り替え条件など。                                      |
-| **`~/.gitconfig-techouse`** | **「会社用の上書き」を担当**。会社リポジトリでのみ使用するメールアドレスや会社用の署名鍵を定義します。 |
+| 設定ファイル | 役割 |
+|:---|:---|
+| **`~/.ssh/config`** | **「ssh通信（鍵の選択）」を担当**。GitHub接続時に、エイリアスホスト等を見て適切な鍵を提示します。 |
+| **`~/.gitconfig`** | **「条件判定とURL置換」を担当**。Techouse用のURLを検知して通信経路を書き換え、会社用設定を読み込みます。 |
+| **`~/.gitconfig-techouse`** | **「会社用情報の上書き」を担当**。会社用メールアドレスや署名用の公開鍵を定義します。 |
 
 ## 2. 鍵の構成と対応表
 
@@ -23,14 +23,13 @@
 
 ### Step 1: 鍵ファイルの配置と権限設定
 鍵ファイルを `~/.ssh/` ディレクトリに配置し、適切な権限を設定します。
-
 ```zsh
 chmod 600 ~/.ssh/id_ed25519_sit
 chmod 600 ~/.ssh/id_ed25519_techouse
 ```
 
 ### Step 2: 鍵をエージェントに登録
-パスフレーズの再入力を省略するため、エージェントに鍵を登録します。
+パスフレーズ入力を省略するため、エージェントに登録します。
 
 #### macOSの場合（キーチェーン連携）
 ```zsh
@@ -39,37 +38,43 @@ ssh-add --apple-use-keychain ~/.ssh/id_ed25519_techouse
 ```
 
 #### Linuxの場合
-標準的な `ssh-add` を使用します。
 ```zsh
 ssh-add ~/.ssh/id_ed25519_sit
 ssh-add ~/.ssh/id_ed25519_techouse
 ```
-※ Linuxで再起動後も保持したい場合は、`.zshrc` 等に `ssh-add` を記述するか、`gnome-keyring` 等のマネージャーを利用してください。
 
 ### Step 3: dotfilesのリンク
 ```zsh
 ./scripts/set-link.sh
 ```
 
-## 4. 正常動作の確認方法
+## 4. 自動切り替えの仕組み
+
+この運用では、`git push/pull` 時のURLをトリガーに設定を自動変更します。
+
+1.  **URL置換**: `git@github.com:techouse-inc/` への接続を検知すると、内部的に `git@github.com-techouse:techouse-inc/` へ書き換えます。
+2.  **SSH鍵の強制**: `github.com-techouse` というホスト名に対し、SSH Configが会社用の鍵を強制的に割り当てます。
+3.  **設定の読込**: 書き換わった後のURLを条件に、会社用の `user.email` 等をインクルードします。
+
+## 5. 正常動作の確認方法
 
 ### SSH接続のテスト
 ```zsh
+# 個人用
 ssh -T git@github.com
-# "Hi shujimurase!" と表示されれば認証成功です
+# 会社用
+ssh -T git@github.com-techouse
 ```
 
 ### Git設定の自動切り替え確認
+リポジトリのURLに応じて `user.email` が変わることを確認してください。
 ```zsh
-# 1. 個人用リポジトリ（~/dotfiles など）
-git config user.email  # => bp21071@shibaura-it.ac.jp
-
-# 2. 会社用リポジトリ（~/workspace/ 配下）
-cd ~/workspace/CHWorkforce
-git config user.email  # => shuji.murase@techouse.jp
+# 会社用リポジトリ内（URLに techouse-inc が含まれる場合）
+git config --show-origin user.email
+# => file:/Users/xxx/.gitconfig-techouse   shuji.murase@techouse.jp
 ```
 
-## 5. 困ったときは
+## 6. 困ったときは
 
 ### 認証エラー（Permission denied）が出る
 SSHエージェントに鍵が読み込まれているか確認してください。
@@ -78,8 +83,11 @@ ssh-add -l
 ```
 
 ### 会社用設定が反映されない
-リポジトリが `~/workspace/` ディレクトリ配下に置かれているか確認してください。
+メインの `.gitconfig` に以下の置換と判定ルールが正しく記述されているか確認してください。
 ```gitconfig
-[includeIf "gitdir:~/workspace/"]
+[url "git@github.com-techouse:techouse-inc/"]
+    insteadOf = git@github.com:techouse-inc/
+
+[includeIf "hasconfig:remote.*.url:git@github.com-techouse:techouse-inc/**"]
     path = ~/.gitconfig-techouse
 ```

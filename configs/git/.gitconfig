@@ -8,6 +8,10 @@
 [commit]
     gpgsign = true
 
-# ディレクトリベースの判定がおすすめ
-[includeIf "gitdir:~/workspace/"]
+# ここを追記：URLにtechouse-incが含まれていたら、鍵固定ホスト(github.com-techouse)にすり替える
+[url "git@github.com-techouse:techouse-inc/"]
+    insteadOf = git@github.com:techouse-inc/
+
+# ディレクトリ判定がダメな場合の代替案
+[includeIf "hasconfig:remote.*.url:git@github.com:techouse-inc/**"]
     path = ~/.gitconfig-techouse
