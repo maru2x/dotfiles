@@ -1,4 +1,8 @@
+# techouse-inc リポジトリ用設定
+[core]
+	sshCommand = ssh -i ~/.ssh/id_ed25519_techouse
+
 [user]
-    name = shujimurase
-    email = shuji.murase@techouse.jp
-    signingkey = ~/.ssh/id_ed25519_techouse.pub
+	name = shujimurase
+	email = shuji.murase@techouse.jp
+	signingkey = ~/.ssh/id_ed25519_techouse
