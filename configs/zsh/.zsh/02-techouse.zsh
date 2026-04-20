@@ -18,7 +18,9 @@ alias wdn='tmux kill-session -t chw 2>/dev/null ; cd "$CHW_DIR" && make down'
 alias cdn='tmux kill-session -t chw 2>/dev/null ; tmux kill-session -t chc 2>/dev/null ; cd "$CHW_DIR" && make down ; cd "$CHC_DIR" && dc down'
 
 # Ruby ビルド用のコンパイラ指定（macOS）
-export CC=/usr/bin/clang
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    export CC=/usr/bin/clang
+fi
 
 # プロンプトの設定
 PROMPT="%K{red}%F{black}%n ($(arch)):%~"$'\n'"%# %f%k"
@@ -61,4 +63,3 @@ alias sshcs='aws sso login --profile central-stg && cd "$CHC_DIR" && AWS_PROFILE
 # 以下のような内容を ~/.secrets.env に記載：
 # export BUNDLE_GITHUB__COM=github_pat_..
 export PATH=$HOME/.nodebrew/current/bin:$PATH
-
