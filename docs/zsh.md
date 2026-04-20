@@ -6,11 +6,23 @@
 configs/zsh/
   .zshrc                  # エントリポイント（モジュール読み込み・tmux自動起動）
   .zsh/
-    00-homebrew.zsh        # Homebrew PATH 設定
+    00-homebrew.zsh        # Homebrew PATH 設定 / pyenv 初期化
     01-ohmyzsh.zsh         # Oh My Zsh・プラグイン・p10k テーマ
     02-techouse.zsh        # Techouse固有設定（rbenv・AWS・プロジェクト）
     03-other.zsh            # エイリアス・環境変数・fzf・ez・compinit
 ```
+
+## pyenv
+
+`~/.pyenv` が存在する場合は `00-homebrew.zsh` で `pyenv` を初期化する。
+
+```bash
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+```
+
+`zsh` をメインで使う前提で、`pyenv install 3.11.11` と `pyenv local 3.11.11` を実行すれば、そのディレクトリでは `python` が 3.11 系を向く。
 
 ## tmux
 
