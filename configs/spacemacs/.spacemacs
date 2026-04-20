@@ -59,7 +59,8 @@ This function should only modify configuration layer settings."
      org
      (shell :variables
             shell-default-height 30
-            shell-default-position 'bottom)
+            shell-default-position 'bottom
+            shell-enable-vterm-support nil)
      ;; spell-checking
      ;; syntax-checking
      ;; version-control
@@ -84,7 +85,9 @@ This function should only modify configuration layer settings."
    dotspacemacs-frozen-packages '()
 
    ;; A list of packages that will not be installed and loaded.
-   dotspacemacs-excluded-packages '()
+   dotspacemacs-excluded-packages '(multi-vterm
+                                    vterm
+                                    vterm-toggle)
 
    ;; Defines the behaviour of Spacemacs when installing packages.
    ;; Possible values are `used-only', `used-but-keep-unused' and `all'.
@@ -763,7 +766,7 @@ This function is called at the very end of Spacemacs initialization."
          load-env-vars log4e lorem-ipsum lsp-docker lsp-latex lsp-mode lsp-origami
          lsp-pyright lsp-treemacs lsp-ui macrostep magit magit-section
          markdown-mode markdown-toc minitest mixed-pitch multi-line multi-term
-         multi-vterm multiple-cursors nameless nodejs-repl nose npm-mode
+         multiple-cursors nameless nodejs-repl nose npm-mode
          open-junk-file org-appear org-category-capture org-cliplink org-contrib
          org-download org-mime org-modern org-pomodoro org-present
          org-project-capture org-projectile org-rich-yank org-superstar orgit
@@ -782,7 +785,7 @@ This function is called at the very end of Spacemacs initialization."
          toc-org transient treemacs treemacs-icons-dired treemacs-magit
          treemacs-persp treemacs-projectile treepy undo-fu-session uuidgen uv
          valign vi-tilde-fringe vimrc-mode visual-fill-column vmd-mode
-         volatile-highlights vterm vterm-toggle vundo web-beautify
+         volatile-highlights vundo web-beautify
          web-completion-data web-mode wgrep which-key window-purpose winum
          with-editor writeroom-mode ws-butler xcscope xref yaml yaml-mode yapfify
          yasnippet yasnippet-snippets)))
