@@ -33,4 +33,4 @@
 
 ## Troubleshooting
 - `brew bundle` が遅い場合は `make install` 実行時のログを確認
-- 既存ファイルの衝突は `scripts/set-link.sh` が削除確認を出す
+- `make set-link` は既存ファイルや親symlinkを自動削除しない。衝突が出たら手動で退避・整理してから再実行する
