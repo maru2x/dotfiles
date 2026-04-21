@@ -62,17 +62,22 @@
 ### `~/.ssh/config`（dotfiles管理）
 
 ```sshconfig
-# Common SSH routing managed by dotfiles.
-# Put machine-specific overrides in ~/.ssh/config.local.
 Host github.com
-    HostName ssh.github.com
-    Port 443
-    User git
+  HostName ssh.github.com
+  Port 443
+  User git
+  IdentityFile ~/.ssh/id_ed25519_sit
+  IdentitiesOnly yes
 
-Include ~/.ssh/config.local
+Host ssh.github.com
+  HostName ssh.github.com
+  Port 443
+  User git
+  IdentityFile ~/.ssh/id_ed25519_sit
+  IdentitiesOnly yes
 ```
 
-このファイルは `configs/ssh/.ssh/config` として dotfiles で管理し、`scripts/set-link.sh` で `~/.ssh/config` にリンクする。マシン固有の SSH 設定は `~/.ssh/config.local` に分離する。
+このファイルは `configs/ssh/.ssh/config` として dotfiles で管理し、`scripts/set-link.sh` で `~/.ssh/config` にリンクする。
 
 ## ローカル署名・GitHub認証・Verified の違い
 
@@ -94,9 +99,8 @@ Include ~/.ssh/config.local
 
 ## SSH / SSH Agent の考え方
 
-- Git の接続先は `~/.ssh/config` で管理する。dotfiles では `github.com` を `ssh.github.com:443` に向ける。
+- Git の接続先は `~/.ssh/config` で管理する。dotfiles では `github.com` と `ssh.github.com` を `ssh.github.com:443` に向ける。
 - Git の鍵選択は `core.sshCommand` で明示する。個人用/会社用の切り替えは `~/.gitconfig` / `~/.gitconfig-techouse` 側で行う。
-- `configs/ssh/.ssh/config` は `Include ~/.ssh/config.local` を含むため、マシン固有の SSH 設定は `~/.ssh/config.local` に分離できる。
 - `configs/zsh/.zsh/04-ssh-agent.zsh` は対話シェルでのみ動作し、既存の `ssh-agent` を再利用し、なければ起動し、存在する鍵を `ssh-add` する。
 - `ssh-agent` の役割は「秘密鍵のパスフレーズ入力を減らす」「GitHub 認証を楽にする」であり、ローカルの `git commit` 成立条件そのものではない。
 - Bitwarden SSH Agent は使わない。
@@ -113,7 +117,7 @@ chmod 600 ~/.ssh/id_ed25519_techouse 2>/dev/null || true
 
 個人用のセットアップだけなら `id_ed25519_sit` があれば足りる。`id_ed25519_techouse` は会社用リポジトリを扱うときだけ必要。
 
-既存の `~/.ssh/config` に手元固有の設定がある場合は、`make set-link` の前に `~/.ssh/config.local` へ移しておく。dotfiles で管理する `~/.ssh/config` は `~/.ssh/config.local` を `Include` する。
+既存の `~/.ssh/config` に手元固有の設定がある場合は、`make set-link` 実行前に退避してから、必要なら `configs/ssh/.ssh/config` 側へ取り込む。
 
 ### 2. dotfiles の Git 設定をリンク
 

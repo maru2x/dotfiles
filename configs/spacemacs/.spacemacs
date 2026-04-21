@@ -585,6 +585,16 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
   )
 (defun dotspacemacs/user-config ()
 
+  ;; 端末版 Emacs と subprocess の文字コードを UTF-8 に揃える
+  (set-language-environment "Japanese")
+  (prefer-coding-system 'utf-8-unix)
+  (set-default-coding-systems 'utf-8-unix)
+  (set-terminal-coding-system 'utf-8-unix)
+  (set-keyboard-coding-system 'utf-8-unix)
+  (setq locale-coding-system 'utf-8-unix)
+  (setq-default buffer-file-coding-system 'utf-8-unix)
+  (modify-coding-system-alist 'process "git" '(utf-8-unix . utf-8-unix))
+
   ;; rbenv系コマンド実行のためshimsパスをemacsに伝達
   (let ((path "/Users/shujimurase/.rbenv/shims"))
     (setenv "PATH" (concat path ":" (getenv "PATH")))

@@ -17,8 +17,19 @@ fi
 # モジュール読み込み
 # ========================================
 for config_file in ~/.zsh/*.zsh(N); do
+  if [[ "$(basename "$config_file")" == "techouse.zsh" ]]; then
+    continue
+  fi
+
   source "$config_file"
 done
+
+# ========================================
+# Techouse 設定の読み込み（明示フラグ）
+# ========================================
+if [ -f "$HOME/.config/techouse/enabled" ] && [ -f ~/.zsh/techouse.zsh ]; then
+  source ~/.zsh/techouse.zsh
+fi
 
 # ========================================
 # プライベート設定の読み込み（オプション）

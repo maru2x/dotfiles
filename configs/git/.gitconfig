@@ -1,6 +1,7 @@
 # デフォルト設定（個人用）
 [core]
 	sshCommand = ssh -i ~/.ssh/id_ed25519_sit -o IdentitiesOnly=yes
+	quotepath = false
 
 [user]
 	name = shujimurase
@@ -16,6 +17,8 @@
 
 [gpg]
 	format = ssh
+[i18n]
+	logOutputEncoding = utf-8
 [commit]
 	gpgsign = true
 
