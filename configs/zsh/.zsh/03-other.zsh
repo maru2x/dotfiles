@@ -15,12 +15,8 @@ alias rz='source ~/.zshrc'
 
 alias cdd='cd $DOTFILES_DIR'
 alias cda='cd $HOME/adids'
-
-# ========================================
-# fzf 設定
-# ========================================
-[ -f "$(brew --prefix)/opt/fzf/shell/completion.zsh" ] && source "$(brew --prefix)/opt/fzf/shell/completion.zsh"
-[ -f "$(brew --prefix)/opt/fzf/shell/key-bindings.zsh" ] && source "$(brew --prefix)/opt/fzf/shell/key-bindings.zsh"
+alias x='codex'
+alias enw='emacs -nw'
 
 export FZF_DEFAULT_OPTS='
   --height 60%
