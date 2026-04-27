@@ -87,7 +87,9 @@ This function should only modify configuration layer settings."
    ;; A list of packages that will not be installed and loaded.
    dotspacemacs-excluded-packages '(multi-vterm
                                     vterm
-                                    vterm-toggle)
+                                    vterm-toggle
+                                    forge
+                                    sqlite3)
 
    ;; Defines the behaviour of Spacemacs when installing packages.
    ;; Possible values are `used-only', `used-but-keep-unused' and `all'.
@@ -660,11 +662,11 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
   (defun my/run-texinit (command)
     "Run texinit COMMAND in the current directory with compilation output."
     (let ((default-directory
-            (file-name-as-directory
-             (expand-file-name
-              (or (and (buffer-file-name)
-                       (file-name-directory (buffer-file-name)))
-                  default-directory)))))
+           (file-name-as-directory
+            (expand-file-name
+             (or (and (buffer-file-name)
+                      (file-name-directory (buffer-file-name)))
+                 default-directory)))))
       (compile command)))
 
   (defun my/texinit ()
@@ -745,7 +747,6 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
     (setq TeX-view-program-list
           '(("PDF Tools" TeX-pdf-tools-sync-view))))
   )
-
 ;; Do not write anything past this comment. This i  where Emacs will
 ;; auto-generate custom variable definitions.
 (defun dotspacemacs/emacs-custom-settings ()
@@ -759,69 +760,10 @@ This function is called at the very end of Spacemacs initialization."
    ;; Your init file should contain only one such instance.
    ;; If there is more than one, they won't work right.
    '(custom-safe-themes
-     '("01f347a923dd21661412d4c5a7c7655bf17fb311b57ddbdbd6fce87bd7e58de6"
-       "9af2b1c0728d278281d87dc91ead7f5d9f2287b1ed66ec8941e97ab7a6ab73c0"
-       "d2ab3d4f005a9ad4fb789a8f65606c72f30ce9d281a9e42da55f7f4b9ef5bfc6"
-       "832a3471e6e56c42ae430771a14c65b0006412bb8a0eb94fcc4a604587e20b80"
-       "daa27dcbe26a280a9425ee90dc7458d85bd540482b93e9fa94d4f43327128077"
-       "c20728f5c0cb50972b50c929b004a7496d3f2e2ded387bf870f89da25793bb44" default))
+     '("01f347a923dd21661412d4c5a7c7655bf17fb311b57ddbdbd6fce87bd7e58de6" "9af2b1c0728d278281d87dc91ead7f5d9f2287b1ed66ec8941e97ab7a6ab73c0" "d2ab3d4f005a9ad4fb789a8f65606c72f30ce9d281a9e42da55f7f4b9ef5bfc6" "832a3471e6e56c42ae430771a14c65b0006412bb8a0eb94fcc4a604587e20b80" "daa27dcbe26a280a9425ee90dc7458d85bd540482b93e9fa94d4f43327128077" "c20728f5c0cb50972b50c929b004a7496d3f2e2ded387bf870f89da25793bb44" default))
    '(org-agenda-files '("~/Documents/dump/20260121.org"))
    '(package-selected-packages
-     '(a ace-link ace-window add-node-modules-path aggressive-indent alert
-         all-the-icons anaconda-mode auto-compile auto-highlight-symbol
-         auto-yasnippet avy-jump-helm-line blacken bui bundler
-         centered-cursor-mode cfrs chruby clang-format clean-aindent-mode closql
-         code-cells code-review column-enforce-mode company company-anaconda
-         company-auctex company-emoji company-math company-reftex company-web
-         concurrent consult counsel counsel-css ctable cython-mode dactyl-mode
-         dap-mode deferred define-word devdocs diminish dired-quick-sort
-         disable-mouse dotenv-mode drag-stuff dumb-jump eat edit-indirect
-         editorconfig elisp-def elisp-demos elisp-slime-nav emacsql emmet-mode
-         emoji-cheat-sheet-plus emojify emr enh-ruby-mode epc epl esh-help
-         eshell-prompt-extras eshell-z eval-sexp-fu evil-anzu evil-args
-         evil-cleverparens evil-escape evil-evilified-state evil-exchange
-         evil-goggles evil-iedit-state evil-indent-plus evil-lion evil-lisp-state
-         evil-matchit evil-mc evil-nerd-commenter evil-numbers evil-org
-         evil-surround evil-textobj-line evil-tutor evil-unimpaired
-         evil-visual-mark-mode evil-visualstar expand-region eyebrowse
-         fancy-battery flycheck flycheck-elsa flycheck-package flycheck-pos-tip
-         ggtags gh-md ghub git-link git-messenger git-modes git-timemachine
-         gitignore-templates gntp gnuplot golden-ratio google-translate grizzl
-         haml-mode helm-ag helm-c-yasnippet helm-comint helm-company helm-cscope
-         helm-css-scss helm-descbinds helm-ls-git helm-lsp helm-make
-         helm-mode-manager helm-org helm-org-rifle helm-projectile helm-purpose
-         helm-pydoc helm-swoop helm-xref hide-comnt highlight-indentation
-         highlight-numbers highlight-parentheses hl-todo holy-mode ht htmlize
-         hungry-delete hybrid-mode hydra imenu-list impatient-mode import-js
-         importmagic indent-guide inf-ruby info+ inspector ivy js-doc js2-mode
-         js2-refactor json-mode json-navigator json-reformat json-snatcher
-         kanagawa-themes link-hint list-utils live-py-mode livid-mode llama
-         load-env-vars log4e lorem-ipsum lsp-docker lsp-latex lsp-mode lsp-origami
-         lsp-pyright lsp-treemacs lsp-ui macrostep magit magit-section
-         markdown-mode markdown-toc minitest mixed-pitch multi-line multi-term
-         multiple-cursors nameless nodejs-repl nose npm-mode
-         open-junk-file org-appear org-category-capture org-cliplink org-contrib
-         org-download org-mime org-modern org-pomodoro org-present
-         org-project-capture org-projectile org-rich-yank org-superstar orgit
-         orgit-forge origami overseer package-lint page-break-lines paradox
-         paredit parent-mode password-generator pcre2el persp-mode pet pfuture
-         pip-requirements pipenv pippel pkg-info poetry popup popwin pos-tip
-         posframe powerline prettier-js projectile pug-mode py-isort pydoc
-         pyenv-mode pylookup python-pytest pythonic pyvenv quickrun
-         rainbow-delimiters rake rbenv reformatter restart-emacs robe rspec-mode
-         rubocop rubocopfmt ruby-hash-syntax ruby-refactor ruby-test-mode
-         ruby-tools ruff-format rvm sass-mode scss-mode shell-pop shut-up
-         simple-httpd skewer-mode slim-mode smeargle space-doc spaceline
-         spacemacs-purpose-popwin spacemacs-whitespace-cleanup sphinx-doc spinner
-         sql-indent sqlite3 sqlup-mode string-edit-at-point string-inflection
-         swiper symbol-overlay symon tagedit term-cursor terminal-here tern
-         toc-org transient treemacs treemacs-icons-dired treemacs-magit
-         treemacs-persp treemacs-projectile treepy undo-fu-session uuidgen uv
-         valign vi-tilde-fringe vimrc-mode visual-fill-column vmd-mode
-         volatile-highlights vundo web-beautify
-         web-completion-data web-mode wgrep which-key window-purpose winum
-         with-editor writeroom-mode ws-butler xcscope xref yaml yaml-mode yapfify
-         yasnippet yasnippet-snippets)))
+     '(sqlite3 a ace-link ace-window add-node-modules-path aggressive-indent alert all-the-icons anaconda-mode auto-compile auto-highlight-symbol auto-yasnippet avy-jump-helm-line blacken bui bundler centered-cursor-mode cfrs chruby clang-format clean-aindent-mode code-cells code-review column-enforce-mode company company-anaconda company-auctex company-emoji company-math company-reftex company-web concurrent consult counsel counsel-css ctable cython-mode dactyl-mode dap-mode deferred define-word devdocs diminish dired-quick-sort disable-mouse dotenv-mode drag-stuff dumb-jump eat edit-indirect editorconfig elisp-def elisp-demos elisp-slime-nav emacsql emmet-mode emoji-cheat-sheet-plus emojify emr enh-ruby-mode epc epl esh-help eshell-prompt-extras eshell-z eval-sexp-fu evil-anzu evil-args evil-cleverparens evil-escape evil-evilified-state evil-exchange evil-goggles evil-iedit-state evil-indent-plus evil-lion evil-lisp-state evil-matchit evil-mc evil-nerd-commenter evil-numbers evil-org evil-surround evil-textobj-line evil-tutor evil-unimpaired evil-visual-mark-mode evil-visualstar expand-region eyebrowse fancy-battery flycheck flycheck-elsa flycheck-package flycheck-pos-tip ggtags gh-md ghub git-link git-messenger git-modes git-timemachine gitignore-templates gntp gnuplot golden-ratio google-translate grizzl haml-mode helm-ag helm-c-yasnippet helm-comint helm-company helm-cscope helm-css-scss helm-descbinds helm-ls-git helm-lsp helm-make helm-mode-manager helm-org helm-org-rifle helm-projectile helm-purpose helm-pydoc helm-swoop helm-xref hide-comnt highlight-indentation highlight-numbers highlight-parentheses hl-todo holy-mode ht htmlize hungry-delete hybrid-mode hydra imenu-list impatient-mode import-js importmagic indent-guide inf-ruby info+ inspector ivy js-doc js2-mode js2-refactor json-mode json-navigator json-reformat json-snatcher kanagawa-themes link-hint list-utils live-py-mode livid-mode llama load-env-vars log4e lorem-ipsum lsp-docker lsp-latex lsp-mode lsp-origami lsp-pyright lsp-treemacs lsp-ui macrostep magit magit-section markdown-mode markdown-toc minitest mixed-pitch multi-line multi-term multiple-cursors nameless nodejs-repl nose npm-mode open-junk-file org-appear org-category-capture org-cliplink org-contrib org-download org-mime org-modern org-pomodoro org-present org-project-capture org-projectile org-rich-yank org-superstar orgit origami overseer package-lint page-break-lines paradox paredit parent-mode password-generator pcre2el persp-mode pet pfuture pip-requirements pipenv pippel pkg-info poetry popup popwin pos-tip posframe powerline prettier-js projectile pug-mode py-isort pydoc pyenv-mode pylookup python-pytest pythonic pyvenv quickrun rainbow-delimiters rake rbenv reformatter restart-emacs robe rspec-mode rubocop rubocopfmt ruby-hash-syntax ruby-refactor ruby-test-mode ruby-tools ruff-format rvm sass-mode scss-mode shell-pop shut-up simple-httpd skewer-mode slim-mode smeargle space-doc spaceline spacemacs-purpose-popwin spacemacs-whitespace-cleanup sphinx-doc spinner sql-indent sqlup-mode string-edit-at-point string-inflection swiper symbol-overlay symon tagedit term-cursor terminal-here tern toc-org transient treemacs treemacs-icons-dired treemacs-magit treemacs-persp treemacs-projectile treepy undo-fu-session uuidgen uv valign vi-tilde-fringe vimrc-mode visual-fill-column vmd-mode volatile-highlights vundo web-beautify web-completion-data web-mode wgrep which-key window-purpose winum with-editor writeroom-mode ws-butler xcscope xref yaml yaml-mode yapfify yasnippet yasnippet-snippets)))
   (custom-set-faces
    ;; custom-set-faces was added by Custom.
    ;; If you edit it by hand, you could mess it up, so be careful.

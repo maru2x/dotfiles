@@ -29,8 +29,8 @@ cd "$(dirname "$0")/.."
 # Install software listed in Brewfile.
 if ! BREW_BIN="$(find_brew)"; then
   cat >&2 <<'EOF'
-Homebrew was not found.
-Install Homebrew manually for your platform, then rerun make install.
+Homebrew が見つかりませんでした。
+OS に応じた方法で Homebrew を手動インストールしてから、make install を再実行してください。
 macOS: https://brew.sh/
 Linux: https://docs.brew.sh/Homebrew-on-Linux
 EOF
@@ -41,6 +41,6 @@ fi
 
 # Install Oh My Zsh if missing.
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
-  echo "Installing Oh My Zsh..."
+  echo "Oh My Zsh をインストールします..."
   RUNZSH=no CHSH=no KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 fi
