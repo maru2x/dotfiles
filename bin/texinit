@@ -1,0 +1,185 @@
+#!/bin/bash
+
+set -euo pipefail
+
+usage() {
+  cat <<'EOT'
+Usage:
+  texinit [name]
+  texinit --mylab [name]
+  texinit --watch [name]
+  texinit --mylab --watch [name]
+
+Examples:
+  texinit
+  texinit report
+  texinit --mylab
+  texinit --mylab report
+EOT
+}
+
+mode="build"
+template="basic"
+name="main"
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --mylab)
+      template="mylab"
+      shift
+      ;;
+    --watch)
+      mode="watch"
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    -* )
+      echo "Unknown option: $1" >&2
+      usage >&2
+      exit 1
+      ;;
+    * )
+      name="$1"
+      shift
+      ;;
+  esac
+done
+
+tex_file="${name}.tex"
+
+for file in "$tex_file" .latexmkrc Makefile .gitignore; do
+  if [ -e "$file" ]; then
+    echo "Error: $file already exists in $(pwd)." >&2
+    echo "Run this in a new directory, or move/remove the existing files first." >&2
+    exit 1
+  fi
+done
+
+cat > Makefile <<EOT
+TEX=${name}
+
+all:
+	latexmk -pdfdvi \$(TEX).tex
+
+watch:
+	latexmk -pvc -pdfdvi \$(TEX).tex
+
+clean:
+	latexmk -c \$(TEX).tex
+EOT
+
+cat > .gitignore <<'EOT'
+*.aux
+*.dvi
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+/auto/
+/fig/
+EOT
+
+if [ "$template" = "basic" ]; then
+  cat > .latexmkrc <<'EOT'
+$latex = 'platex';
+$bibtex = 'pbibtex';
+$dvipdf = 'dvipdfmx %O -o %D %S';
+$makeindex = 'mendex %O -o %D %S';
+EOT
+
+  cat > "$tex_file" <<'EOT'
+\documentclass[a4paper,11pt]{jsarticle}
+
+\usepackage[margin=25mm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage[dvipdfmx]{hyperref}
+
+\title{レポートタイトル}
+\author{氏名}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{はじめに}
+ここに本文を書きます。
+
+\section{結果}
+必要に応じて内容を追加してください。
+
+\section{まとめ}
+ここに結論を書きます。
+
+\end{document}
+EOT
+else
+  mylab_src='/home/mnl/Documents/mylab/中間発表/中間発表パラグラフ案/mylab-techrep.sty'
+  if [ ! -f "$mylab_src" ]; then
+    echo "Error: mylab template source not found: $mylab_src" >&2
+    exit 1
+  fi
+
+  cp "$mylab_src" ./mylab-techrep.sty
+  mkdir -p fig
+
+  cat > .latexmkrc <<'EOT'
+$latex = 'uplatex';
+$bibtex = 'upbibtex';
+$dvipdf = 'dvipdfmx %O -o %D %S';
+$makeindex = 'mendex %O -o %D %S';
+EOT
+
+  cat > "$tex_file" <<'EOT'
+\documentclass[uplatex,dvi=dvipdfmx,ja=standard,base=10pt,magstyle=nomag*,twocolumn,a4paper]{bxjsarticle}
+
+\usepackage{mylab-techrep}
+\usepackage[dvipdfmx]{graphicx}
+\graphicspath{{fig/}}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+
+\renewcommand{\baselinestretch}{0.9}
+
+\labname{研究室名}
+\studentid{BP00000}
+\prefprof{指導教員}
+\profname{教員名}
+\suffprof{教授}
+\author{氏名}
+\date{\today}
+\title{mylab形式レポートタイトル}
+
+\begin{document}
+\maketitle
+
+\section{はじめに}
+ここに本文を書きます．
+
+\section{結果}
+必要に応じて追記します．
+
+\begin{thebibliography}{9}
+\bibitem{dummy} 著者, ``題目,'' 雑誌名, 2026.
+\end{thebibliography}
+\end{document}
+EOT
+fi
+
+echo "Created: ${tex_file}, .latexmkrc, Makefile, .gitignore"
+if [ "$template" = "mylab" ]; then
+  echo "Created: mylab-techrep.sty, fig/"
+fi
+
+case "$mode" in
+  build)
+    exec make
+    ;;
+  watch)
+    exec make watch
+    ;;
+esac

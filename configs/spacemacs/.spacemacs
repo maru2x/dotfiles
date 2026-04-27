@@ -656,11 +656,34 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
     (add-to-list 'projectile-globally-ignored-directories "public/assets")
     (add-to-list 'projectile-globally-ignored-directories ".taskmaster"))
 
+  ;; texinit を現在のディレクトリで実行
+  (defun my/run-texinit (command)
+    "Run texinit COMMAND in the current directory with compilation output."
+    (let ((default-directory
+            (file-name-as-directory
+             (expand-file-name
+              (or (and (buffer-file-name)
+                       (file-name-directory (buffer-file-name)))
+                  default-directory)))))
+      (compile command)))
+
+  (defun my/texinit ()
+    "Generate a basic TeX project and build it in the current directory."
+    (interactive)
+    (my/run-texinit "texinit"))
+
+  (defun my/texinit-mylab ()
+    "Generate a mylab-style TeX project and build it in the current directory."
+    (interactive)
+    (my/run-texinit "texinit --mylab"))
+
   (spacemacs/set-leader-keys
     "bi" 'ibuffer
     "oc" 'org-capture
     "oa" 'org-agenda
-    "ol" 'org-store-link)
+    "ol" 'org-store-link
+    "ot" 'my/texinit
+    "om" 'my/texinit-mylab)
   (with-eval-after-load 'org
     (setq org-directory "~/org"
           org-default-notes-file (expand-file-name "inbox.org" org-directory)
