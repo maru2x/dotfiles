@@ -55,3 +55,5 @@ fi
 # User commands
 # ========================================
 [[ ":$PATH:" != *":$HOME/dotfiles/bin:"* ]] && export PATH="$HOME/dotfiles/bin:$PATH"
+
+export PATH=/opt/zeek/bin:$PATH
