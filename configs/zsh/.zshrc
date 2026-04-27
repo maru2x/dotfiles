@@ -44,7 +44,7 @@ fi
 # ========================================
 # zsh起動時に自動でtmuxセッションへ
 # ========================================
-if [ -z "$TMUX" ]; then
+if [[ -o interactive ]] && [[ -z "$TMUX" ]] && [[ -t 0 ]] && [[ -t 1 ]] && command -v tmux >/dev/null 2>&1; then
   exec tmux new-session -A -s main
 fi
 

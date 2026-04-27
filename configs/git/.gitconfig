@@ -8,13 +8,6 @@
 	email = bp21071@shibaura-it.ac.jp
 	signingkey = ~/.ssh/id_ed25519_sit
 
-[credential "https://github.com"]
-	helper =
-	helper = !/opt/homebrew/bin/gh auth git-credential
-[credential "https://gist.github.com"]
-	helper =
-	helper = !/opt/homebrew/bin/gh auth git-credential
-
 [gpg]
 	format = ssh
 [i18n]
