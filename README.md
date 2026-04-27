@@ -26,6 +26,8 @@
 - `/home/linuxbrew/.linuxbrew/bin/brew`
 - `/opt/homebrew/bin/brew`
 - `/usr/local/bin/brew`
+- `scripts/install.sh` は `zsh` が見つかり、対話端末で実行され、かつ `/etc/shells` に登録されている場合は `chsh -s <zshへのパス>` を試行する
+- 現在のログインシェルを判定できない場合や非対話環境などで `chsh` を実行できない場合は、警告を表示して処理を継続する
 - `scripts/set-link.sh` 実行前には GNU Stow が必要
 
 ## 実行
