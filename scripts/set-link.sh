@@ -2,7 +2,7 @@
 setopt null_glob
 
 if ! command -v stow >/dev/null 2>&1; then
-  echo "GNU Stow が見つかりません。先にインストールしてから ./scripts/set-link.sh を再実行してください。" >&2
+  echo "GNU Stow が見つかりません。先にインストールしてから make set-link を再実行してください。" >&2
   exit 1
 fi
 
@@ -19,85 +19,43 @@ done
 
 typeset -i has_conflicts=0
 
-find_symlink_parent() {
-  local path="$1"
-  local parent="${path:h}"
-  local home_root="${HOME:A}"
-
-  while [[ "$parent" != "$home_root" && "$parent" != "/" ]]; do
-    if [[ -L "$parent" ]]; then
-      print -r -- "$parent"
-      return 0
-    fi
-    parent="${parent:h}"
-  done
-
-  return 1
-}
-
-describe_conflict() {
-  local target="$1"
-  local expected="$2"
-  local parent_symlink="$3"
-  local link_target=""
-  local path_type=""
-
-  if [[ -n "$parent_symlink" ]]; then
-    link_target="$(readlink "$parent_symlink" 2>/dev/null || true)"
-    printf '%s（親ディレクトリが symlink: %s -> %s, 配置先想定: %s）' \
-      "$target" "$parent_symlink" "${link_target:-不明}" "$expected"
-    return 0
-  fi
-
-  if [[ -L "$target" ]]; then
-    link_target="$(readlink "$target" 2>/dev/null || true)"
-    if [[ -e "$target" ]]; then
-      printf '%s（symlink -> %s, 配置先想定: %s）' \
-        "$target" "${link_target:-不明}" "$expected"
-    else
-      printf '%s（壊れた symlink -> %s, 配置先想定: %s）' \
-        "$target" "${link_target:-不明}" "$expected"
-    fi
-    return 0
-  fi
-
-  if [[ -d "$target" ]]; then
-    path_type="ディレクトリ"
-  elif [[ -f "$target" ]]; then
-    path_type="ファイル"
-  else
-    path_type="既存パス"
-  fi
-
-  printf '%s（%s, 配置先想定: %s）' "$target" "$path_type" "$expected"
-}
-
 check_package_conflicts() {
   local name="$1"
-  local relpath target expected parent_symlink
+  local relpath target expected
+  local current_relpath current_target current_expected
+  local -a path_parts
   local -a conflicts=()
 
   while IFS= read -r relpath; do
     target="$HOME/$relpath"
     expected="$repo_root/configs/$name/$relpath"
-    parent_symlink="$(find_symlink_parent "$target")"
 
-    if [[ -n "$parent_symlink" ]]; then
-      conflicts+=("$(describe_conflict "$target" "$expected" "$parent_symlink")")
-      continue
-    fi
+    path_parts=("${(@s:/:)relpath}")
+    current_relpath=""
 
-    if [[ -L "$target" ]]; then
-      if [[ "${target:A}" == "${expected:A}" ]]; then
+    for part in "${path_parts[@]}"; do
+      if [[ -n "$current_relpath" ]]; then
+        current_relpath+="/"
+      fi
+      current_relpath+="$part"
+      current_target="$HOME/$current_relpath"
+      current_expected="$repo_root/configs/$name/$current_relpath"
+
+      if [[ ! -e "$current_target" && ! -L "$current_target" ]]; then
         continue
       fi
-      conflicts+=("$(describe_conflict "$target" "$expected" "")")
-      continue
-    fi
 
-    if [[ -e "$target" ]]; then
-      conflicts+=("$(describe_conflict "$target" "$expected" "")")
-    fi
+      if [[ "$current_relpath" != "$relpath" && -d "$current_target" && ! -L "$current_target" ]]; then
+        continue
+      fi
+
+      if [[ "${current_target:A}" == "${current_expected:A}" ]]; then
+        continue
+      fi
+
+      conflicts+=("$target（$expected ではないリンクまたは既存ファイルが指定されています）")
+      break
+    done
   done < <(find "configs/$name" \( -type f -o -type l \) | sed "s|^configs/$name/||" | sort)
 
   if (( ${#conflicts[@]} > 0 )); then
@@ -106,7 +64,7 @@ check_package_conflicts() {
 
     printf '%s で衝突が見つかりました:\n' "$name"
     printf '  %s\n' "${uniq_conflicts[@]}"
-    printf '対象パスを手動で退避または整理してから、./scripts/set-link.sh を再実行してください。\n\n'
+    printf '対象パスを手動で退避または整理してから、make set-link を再実行してください。\n\n'
 
     has_conflicts=1
   fi
