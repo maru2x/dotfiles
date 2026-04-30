@@ -105,6 +105,8 @@ exec tmux new-session -A -s main
 ```bash
 mkdir -p ~/.config/techouse
 touch ~/.config/techouse/enabled
+mkdir -p ~/.config/techouse
+touch ~/.config/techouse/enabled
 ```
 
 無効化したい場合はフラグファイルを削除します。
