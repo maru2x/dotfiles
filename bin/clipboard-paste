@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+set -eu
+
+if command -v pbpaste >/dev/null 2>&1; then
+  exec pbpaste
+fi
+
+if command -v wl-paste >/dev/null 2>&1; then
+  exec wl-paste
+fi
+
+if command -v xclip >/dev/null 2>&1; then
+  exec xclip -out -selection clipboard
+fi
+
+if command -v xsel >/dev/null 2>&1; then
+  exec xsel --clipboard --output
+fi
+
+if command -v powershell.exe >/dev/null 2>&1; then
+  exec powershell.exe -NoProfile -Command Get-Clipboard
+fi
+
+echo "No clipboard command found" >&2
+exit 1

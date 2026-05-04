@@ -11,8 +11,8 @@
 
 - 共通の受け渡し先は system clipboard であり、Emacs kill-ring・Vim register・tmux buffer・zsh kill buffer を直接そろえることは目標にしない
 - Vim / Neovim は `clipboard=unnamedplus` を使い、通常の yank / paste を system clipboard と接続する
-- tmux は copy mode の `y` を tmux buffer と system clipboard の両方へ流す
-- Spacemacs / Emacs は kill-ring を内部状態として持ってよいが、アプリ外との copy / paste は system clipboard を優先する方針にする
+- tmux は copy mode の `y` を tmux buffer と system clipboard の両方へ流し、`prefix + p` で system clipboard を現在ペインへ貼り付ける
+- Spacemacs / Emacs は kill-ring を内部状態として持ってよいが、copy / paste のアプリ外連携は `clipboard-copy` / `clipboard-paste` を通して system clipboard を優先する
 - zsh のコマンドライン編集では kill buffer の共有は目指さず、必要な共有は terminal / system clipboard 側に任せる
 
 ## 現在のキーバインド方針
@@ -25,5 +25,5 @@
 
 ## 次に詰めること
 
-- Spacemacs 側の clipboard 連携を明示設定にするか確認する
-- `Ctrl+k/u/w/y` や `Meta+f/b/d` まで共通化するか決める
+- Spacemacs 側の `Ctrl+k/u/w/y` や `Meta+f/b/d` をどこまで共通化するか決める
+- terminal emulator 側の paste shortcut と tmux / Spacemacs 側の貼り付け経路をどこまで統一するか決める

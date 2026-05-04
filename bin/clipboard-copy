@@ -1,0 +1,34 @@
+#!/usr/bin/env sh
+set -eu
+
+tmp="${TMPDIR:-/tmp}/clipboard-copy.$$"
+trap 'rm -f "$tmp"' EXIT HUP INT TERM
+cat >"$tmp"
+
+if command -v pbcopy >/dev/null 2>&1; then
+  pbcopy <"$tmp"
+  exit 0
+fi
+
+if command -v wl-copy >/dev/null 2>&1; then
+  wl-copy <"$tmp"
+  exit 0
+fi
+
+if command -v xclip >/dev/null 2>&1; then
+  xclip -in -selection clipboard <"$tmp"
+  exit 0
+fi
+
+if command -v xsel >/dev/null 2>&1; then
+  xsel --clipboard --input <"$tmp"
+  exit 0
+fi
+
+if command -v clip.exe >/dev/null 2>&1; then
+  clip.exe <"$tmp"
+  exit 0
+fi
+
+echo "No clipboard command found" >&2
+exit 1

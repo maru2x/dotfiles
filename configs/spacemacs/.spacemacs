@@ -604,6 +604,35 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
     (setenv "PATH" (concat path ":" (getenv "PATH")))
     (add-to-list 'exec-path path))
 
+  ;; system clipboard を共通出口にする
+  (defconst my/clipboard-copy-command
+    (expand-file-name "~/dotfiles/bin/clipboard-copy"))
+  (defconst my/clipboard-paste-command
+    (expand-file-name "~/dotfiles/bin/clipboard-paste"))
+
+  (defun my/system-clipboard-copy (text &optional _push)
+    "Copy TEXT to the system clipboard."
+    (when (and text (file-executable-p my/clipboard-copy-command))
+      (with-temp-buffer
+        (insert text)
+        (let ((coding-system-for-write 'utf-8-unix))
+          (call-process-region (point-min) (point-max) my/clipboard-copy-command nil nil nil))))
+    text)
+
+  (defun my/system-clipboard-paste ()
+    "Return text from the system clipboard, or nil on failure."
+    (when (file-executable-p my/clipboard-paste-command)
+      (with-temp-buffer
+        (let ((coding-system-for-read 'utf-8-unix))
+          (when (zerop (call-process my/clipboard-paste-command nil t nil))
+            (buffer-string))))))
+
+  (setq select-enable-clipboard t
+        select-enable-primary nil
+        save-interprogram-paste-before-kill t
+        interprogram-cut-function #'my/system-clipboard-copy
+        interprogram-paste-function #'my/system-clipboard-paste)
+
   ;; デフォルトで centered-cursor-mode を有効化
   (global-centered-cursor-mode 1)
 

@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+set -eu
+
+tmp="${TMPDIR:-/tmp}/tmux-paste.$$"
+trap 'rm -f "$tmp"' EXIT HUP INT TERM
+
+"$HOME/dotfiles/bin/clipboard-paste" >"$tmp"
+tmux load-buffer "$tmp"
+tmux paste-buffer
