@@ -50,10 +50,3 @@ fi
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
-# ========================================
-# User commands
-# ========================================
-[[ ":$PATH:" != *":$HOME/dotfiles/bin:"* ]] && export PATH="$HOME/dotfiles/bin:$PATH"
-
-export PATH=/opt/zeek/bin:$PATH

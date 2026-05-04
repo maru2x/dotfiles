@@ -13,6 +13,12 @@ if [ -d "$HOME/.oh-my-zsh" ]; then
     z
   )
 
+
+  # 追加の補完ディレクトリは compinit より前に登録する
+  if [ -d "$HOME/.docker/completions" ]; then
+    fpath=("$HOME/.docker/completions" $fpath)
+  fi
+
   source "$ZSH/oh-my-zsh.sh"
 
   # brew でインストールしたプラグインを直接ロード

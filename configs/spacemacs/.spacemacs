@@ -674,12 +674,12 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
   (defun my/texinit ()
     "Generate a basic TeX project and build it in the current directory."
     (interactive)
-    (my/run-texinit "texinit"))
+    (my/run-texinit "~/dotfiles/bin/texinit"))
 
   (defun my/texinit-mylab ()
     "Generate a mylab-style TeX project and build it in the current directory."
     (interactive)
-    (my/run-texinit "texinit --mylab"))
+    (my/run-texinit "~/dotfiles/bin/texinit --mylab"))
 
   (spacemacs/set-leader-keys
     "bi" 'ibuffer
