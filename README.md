@@ -9,7 +9,7 @@
 - `scripts/`: `Makefile`で利用するシェルコマンド群
 - `docs/`: 運用ドキュメント
 - `Makefile`: `install`/`set-link`/`setup`など、`configs/`の内容を実際にマシンに展開する実行コマンド
-- `Brewfile`: brew管理したいソフトウェアの一覧
+- `Brewfile`: brew管理したいソフトウェアの一覧。詳細は[installed-software.md](docs/installed-software.md)
 `Makefile` の `setup` コマンドを実行することで、 **dotfiles** で管理するソフトウェアがインストールされ、それらの設定ファイルがマシン上に配置される．
 
 ## 実行前準備
@@ -29,6 +29,9 @@
 - `scripts/install.sh` は `zsh` が見つかり、対話端末で実行され、かつ `/etc/shells` に登録されている場合は `chsh -s <zshへのパス>` を試行する
 - 現在のログインシェルを判定できない場合や非対話環境などで `chsh` を実行できない場合は、警告を表示して処理を継続する
 - `scripts/set-link.sh` 実行前には GNU Stow が必要
+
+また、一部のソフトウェアはインストールだけでは動作しない場合があり、権限などの設定を適切に行う必要がある。
+この設定については、[installed-software.md](docs/installed-software.md)で詳しく説明している。
 
 ## 実行
 `Makefile` には以下のコマンドが用意されている。基本的には、 **##実行前準備**を済ませた状態で `make setup` を実行することでうまく行く。
