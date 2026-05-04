@@ -6,11 +6,13 @@
 configs/zsh/
   .zshrc                   # エントリポイント（secrets / モジュール読込 / tmux 自動起動）
   .zsh/
-    00-homebrew.zsh        # Homebrew PATH 設定 / pyenv 初期化
+    00-homebrew.zsh        # Homebrew PATH 設定
     01-ohmyzsh.zsh         # Oh My Zsh・プラグイン・p10k テーマ
-    techouse.zsh           # Techouse 固有設定（明示フラグ時のみ読み込み）
-    03-other.zsh           # エイリアス・環境変数・fzf・ez・compinit
+    02-alias.zsh           # エイリアス
+    03-other.zsh           # 環境変数・pyenv・コマンドライン keybind
     04-ssh-agent.zsh       # ssh-agent の再利用 / 起動 / 鍵の自動ロード
+    05-fzf.zsh             # fzf 設定
+    techouse.zsh           # Techouse 固有設定（明示フラグ時のみ読み込み）
 ```
 
 ## 読み込み順
@@ -27,9 +29,11 @@ configs/zsh/
 
 日常的な挙動の大半は `~/.zsh/*.zsh` 側で決まる。
 
-## pyenv
+## PATH / pyenv
 
-`~/.pyenv` が存在する場合は `00-homebrew.zsh` で `pyenv` を初期化する。
+Homebrew の PATH は `00-homebrew.zsh` で扱う。
+
+`~/.pyenv` が存在する場合は `03-other.zsh` で `pyenv` を初期化する。
 
 ```bash
 export PYENV_ROOT="$HOME/.pyenv"
@@ -37,7 +41,16 @@ export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 ```
 
-`zsh` をメインで使う前提で、`pyenv install 3.11.11` と `pyenv local 3.11.11` を実行すれば、そのディレクトリでは `python` が 3.11 系を向く。
+`03-other.zsh` ではあわせて `~/dotfiles/bin` と `/opt/zeek/bin` も PATH に加える。
+
+## コマンドライン編集
+
+全体の編集操作規約は [docs/editing.md](./editing.md) を参照する。
+
+- 通常の zsh コマンドラインは `bindkey -e` で Emacs 系に固定する
+- 補完候補の選択中だけ `Ctrl+j` / `Ctrl+k` で上下移動する
+- 補完は Oh My Zsh の `compinit` を使う
+- Docker 補完ディレクトリがあれば、`01-ohmyzsh.zsh` で `compinit` より前に `fpath` へ追加する
 
 ## SSH / ssh-agent
 
@@ -61,7 +74,6 @@ SSH 運用全体は [docs/ssh.md](./ssh.md) を参照する。
 interactive TTY で、tmux 外から zsh を起動した場合は自動で tmux セッション `main` にアタッチする。
 
 ```bash
-# セッションがなければ新規作成、あれば再接続
 exec tmux new-session -A -s main
 ```
 
@@ -91,9 +103,9 @@ rm -f ~/.config/techouse/enabled
 ## 設定管理
 
 ```bash
-ez      # fzf で設定ファイルを選択して編集
-rz      # ~/.zshrc をリロード
+zz      # ~/.zshrc をリロード
 cdd     # dotfiles ディレクトリへ移動
+cda     # ~/adids へ移動
 ```
 
 ## fzf

@@ -18,3 +18,11 @@ fi
 
 # Zeekのパス
 export PATH=/opt/zeek/bin:$PATH
+
+# コマンドラインは Emacs キーバインドを明示する
+bindkey -e
+
+# 補完候補の選択中だけ C-j/C-k で上下移動する
+zmodload -i zsh/complist
+bindkey -M menuselect '^J' down-line-or-history
+bindkey -M menuselect '^K' up-line-or-history
