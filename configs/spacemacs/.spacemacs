@@ -642,6 +642,22 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
   (setq-default truncate-lines t)
   (smartparens-global-mode t)
 
+  ;; ダウンロードディレクトリから特定のディレクトリにファイルを移動
+  (defun my/dired-move-from-downloads ()
+    "Move a file from ~/Downloads to the current Dired directory."
+    (interactive)
+    (unless (derived-mode-p 'dired-mode)
+      (user-error "This command must be run in a Dired buffer"))
+    (let* ((source (read-file-name "Move from Downloads: "
+                                   "~/Downloads/"
+                                   nil
+                                   t))
+           (dest-dir default-directory)
+           (dest (expand-file-name (file-name-nondirectory source)
+                                   dest-dir)))
+      (rename-file source dest 1)
+      (revert-buffer)))
+
   ;; markdown-mode のパフォーマンス改善
   ;; valign はCJK文字を含む大きなテーブルで編集のたびにピクセル計算が走り極端に重くなるため無効化
   (with-eval-after-load 'markdown-mode
@@ -712,6 +728,7 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
 
   (spacemacs/set-leader-keys
     "bi" 'ibuffer
+    "or" 'my/dired-move-from-downloads
     "oc" 'org-capture
     "oa" 'org-agenda
     "ol" 'org-store-link

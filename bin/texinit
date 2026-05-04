@@ -21,6 +21,9 @@ EOT
 mode="build"
 template="basic"
 name="main"
+script_dir="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(CDPATH= cd -- "${script_dir}/.." && pwd)"
+template_root="${repo_root}/templates/texinit"
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -50,7 +53,27 @@ done
 
 tex_file="${name}.tex"
 
-for file in "$tex_file" .latexmkrc Makefile .gitignore; do
+case "$template" in
+  basic|mylab)
+    template_dir="${template_root}/${template}"
+    ;;
+  *)
+    echo "Error: unknown template: ${template}" >&2
+    exit 1
+    ;;
+esac
+
+if [ ! -d "$template_dir" ]; then
+  echo "Error: template directory not found: $template_dir" >&2
+  exit 1
+fi
+
+targets=("$tex_file" .latexmkrc Makefile .gitignore)
+if [ "$template" = "mylab" ]; then
+  targets+=(mylab-techrep.sty fig)
+fi
+
+for file in "${targets[@]}"; do
   if [ -e "$file" ]; then
     echo "Error: $file already exists in $(pwd)." >&2
     echo "Run this in a new directory, or move/remove the existing files first." >&2
@@ -58,116 +81,26 @@ for file in "$tex_file" .latexmkrc Makefile .gitignore; do
   fi
 done
 
-cat > Makefile <<EOT
-TEX=${name}
+escape_sed_replacement() {
+  printf '%s' "$1" | sed 's/[&/]/\\&/g'
+}
 
-all:
-	latexmk -pdfdvi \$(TEX).tex
+render_template() {
+  local src="$1"
+  local dst="$2"
+  local escaped_name
+  escaped_name="$(escape_sed_replacement "$name")"
+  sed "s/__TEX_BASENAME__/${escaped_name}/g" "$src" > "$dst"
+}
 
-watch:
-	latexmk -pvc -pdfdvi \$(TEX).tex
+render_template "${template_dir}/Makefile" Makefile
+render_template "${template_dir}/.gitignore" .gitignore
+render_template "${template_dir}/.latexmkrc" .latexmkrc
+render_template "${template_dir}/main.tex" "$tex_file"
 
-clean:
-	latexmk -c \$(TEX).tex
-EOT
-
-cat > .gitignore <<'EOT'
-*.aux
-*.dvi
-*.fdb_latexmk
-*.fls
-*.log
-*.out
-*.synctex.gz
-/auto/
-/fig/
-EOT
-
-if [ "$template" = "basic" ]; then
-  cat > .latexmkrc <<'EOT'
-$latex = 'platex';
-$bibtex = 'pbibtex';
-$dvipdf = 'dvipdfmx %O -o %D %S';
-$makeindex = 'mendex %O -o %D %S';
-EOT
-
-  cat > "$tex_file" <<'EOT'
-\documentclass[a4paper,11pt]{jsarticle}
-
-\usepackage[margin=25mm]{geometry}
-\usepackage{amsmath,amssymb}
-\usepackage[dvipdfmx]{graphicx}
-\usepackage[dvipdfmx]{hyperref}
-
-\title{レポートタイトル}
-\author{氏名}
-\date{\today}
-
-\begin{document}
-
-\maketitle
-
-\section{はじめに}
-ここに本文を書きます。
-
-\section{結果}
-必要に応じて内容を追加してください。
-
-\section{まとめ}
-ここに結論を書きます。
-
-\end{document}
-EOT
-else
-  mylab_src='/home/mnl/Documents/mylab/中間発表/中間発表パラグラフ案/mylab-techrep.sty'
-  if [ ! -f "$mylab_src" ]; then
-    echo "Error: mylab template source not found: $mylab_src" >&2
-    exit 1
-  fi
-
-  cp "$mylab_src" ./mylab-techrep.sty
+if [ "$template" = "mylab" ]; then
+  cp "${template_dir}/mylab-techrep.sty" ./mylab-techrep.sty
   mkdir -p fig
-
-  cat > .latexmkrc <<'EOT'
-$latex = 'uplatex';
-$bibtex = 'upbibtex';
-$dvipdf = 'dvipdfmx %O -o %D %S';
-$makeindex = 'mendex %O -o %D %S';
-EOT
-
-  cat > "$tex_file" <<'EOT'
-\documentclass[uplatex,dvi=dvipdfmx,ja=standard,base=10pt,magstyle=nomag*,twocolumn,a4paper]{bxjsarticle}
-
-\usepackage{mylab-techrep}
-\usepackage[dvipdfmx]{graphicx}
-\graphicspath{{fig/}}
-\DeclareGraphicsExtensions{.pdf,.png,.jpg}
-
-\renewcommand{\baselinestretch}{0.9}
-
-\labname{研究室名}
-\studentid{BP00000}
-\prefprof{指導教員}
-\profname{教員名}
-\suffprof{教授}
-\author{氏名}
-\date{\today}
-\title{mylab形式レポートタイトル}
-
-\begin{document}
-\maketitle
-
-\section{はじめに}
-ここに本文を書きます．
-
-\section{結果}
-必要に応じて追記します．
-
-\begin{thebibliography}{9}
-\bibitem{dummy} 著者, ``題目,'' 雑誌名, 2026.
-\end{thebibliography}
-\end{document}
-EOT
 fi
 
 echo "Created: ${tex_file}, .latexmkrc, Makefile, .gitignore"

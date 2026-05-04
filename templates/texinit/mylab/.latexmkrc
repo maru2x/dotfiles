@@ -1,0 +1,5 @@
+$pdf_mode = 3;
+$latex = 'uplatex';
+$bibtex = 'upbibtex';
+$dvipdf = 'dvipdfmx %O -o %D %S';
+$makeindex = 'mendex %O -o %D %S';

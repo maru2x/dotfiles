@@ -1,0 +1,133 @@
+\ProvidesPackage{mylab-techrep}[2020/02/28 v1.02]
+
+\usepackage{url}
+\usepackage{framed}
+\usepackage[nobreak]{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{bm}
+\usepackage{siunitx}
+
+
+% ページ全体の余白設定
+\setpagelayout*{
+  truedimen,
+  top=20truemm,
+  bottom=20truemm,
+  left=20truemm,
+  right=20truemm
+}
+\setlength{\footskip}{10truemm}
+
+% ページ番号削除
+%\pagestyle{empty}
+% カラム間の幅
+\setlength\columnsep{8truemm}
+% 上部BOXのフレーム外余白
+\setlength{\OuterFrameSep}{0pt}
+% 上部BOXのフレーム内余白
+\setlength{\FrameSep}{0.5em}
+
+
+% 教員の種別（指導教員）
+\def\prefprof#1{\def\@prefprof{#1}}
+% 教員の職位（教授/准教授/助教など）
+\def\suffprof#1{\def\@suffprof{#1}}
+% 教員名
+\def\profname#1{\def\@profname{#1}}
+% 研究室名（マルチメディア情報通信研究室/分散ネットワークシステム研究室）
+\def\labname#1{\def\@labname{#1}}
+% 学籍番号（BPXXXXXX）
+\def\studentid#1{\def\@studentid{#1}}
+% 学生名前
+\def\author#1{\def\@author{#1}}
+
+\def\Hline{\noalign{\hrule height 0.4mm}}
+
+% 章、節等の文字の変更
+\renewcommand{\labelenumi}{\textrm{\textbf{\theenumi.}}}
+
+% 表の太線 from IEICE style
+\def\Hline{\noalign{\hrule height 0.4mm}}
+
+\renewcommand{\headfont}{\rmfamily\bfseries}
+
+% 引用書式
+\let\cite=\citen
+\renewcommand\citeform[1]{[#1]}
+
+% section
+\renewcommand{\section}{%
+  \@startsection{section}{1}{1\jsZw}%
+  %{0.1\Cvs}{0\Cvs}%
+  {0.6\Cvs}{0.4\Cvs}%
+  {\large\headfont\raggedright}}
+
+\renewcommand{\subsection}{%
+  \@startsection{subsection}{2}{1\jsZw}%
+  %{\z@}{\z@}%
+  {0.3\Cvs}{0.2\Cvs}%
+  {\normalsize\headfont\raggedright}}
+
+\renewcommand{\subsubsection}{%
+  \@startsection{subsubsection}{3}{1\jsZw}%
+  %{\z@}{\z@}%
+  {0.15\Cvs}{0.1\Cvs}%
+  {\reset@font\bfseries}}
+
+\renewcommand{\refname}{\if@english References\else \centering 参考文献\fi}
+
+\renewcommand{\thesection}{\presectionname\@arabic\c@section\postsectionname}
+\renewcommand{\presectionname}{}%
+\renewcommand{\postsectionname}{.}%
+
+\renewcommand{\maketitle}{\par
+    \begingroup
+      \renewcommand\thefootnote{\@fnsymbol\c@footnote}%
+      \def\@makefnmark{\rlap{\@textsuperscript{\normalfont\@thefnmark}}}%
+      \long\def\@makefntext##1{\advance\leftskip 3\jsZw
+        \parindent 1\jsZw\noindent
+        \llap{\@textsuperscript{\normalfont\@thefnmark}\hskip0.3\jsZw}##1}%
+      \if@twocolumn
+        \ifnum \col@number=\@ne
+          \@maketitle
+        \else
+          \twocolumn[\@maketitle]%
+        \fi
+      \else
+        \newpage
+        \global\@topnum\z@  % Prevents figures from going at top of page.
+        \@maketitle
+      \fi
+      \plainifnotempty
+      \@thanks
+    \endgroup
+    \setcounter{footnote}{0}%
+    \global\let\thanks\relax
+    \global\let\maketitle\relax
+    \global\let\@thanks\@empty
+    \global\let\@author\@empty
+    \global\let\@date\@empty
+    \global\let\@title\@empty
+    \global\let\title\relax
+    \global\let\author\relax
+    \global\let\date\relax
+    \global\let\and\relax
+    \bxjs@annihilate@subtitle
+  }
+
+
+\def\@maketitle{%
+{\begin{framed}
+  \@labname \hskip \fill \@date \par
+%  \raggedleft{\normalsize \@date \par}
+{\vskip 0.25em}
+\centering{\Large\textbf{\@title}\par}
+  {\vskip 0.25em}
+  {\normalsize
+      \@prefprof ： \@profname \hskip 1\jsZw \@suffprof
+      \hskip \fill
+      \@studentid \hskip 1\jsZw \@author \par
+}%
+  \end{framed}}
+\par\vskip 0.5em
+}
