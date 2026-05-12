@@ -43,6 +43,19 @@ eval "$(pyenv init -)"
 
 `03-other.zsh` ではあわせて `~/dotfiles/bin` と `/opt/zeek/bin` も PATH に加える。
 
+## timezone
+
+`03-other.zsh` では shell 起動時に次を設定する。
+
+```bash
+export DOTFILES_TIMEZONE="${DOTFILES_TIMEZONE:-Asia/Tokyo}"
+export TZ="$DOTFILES_TIMEZONE"
+```
+
+- デフォルトは `Asia/Tokyo`
+- 端末から起動した `emacs -nw` や各種 subprocess も同じ timezone を継承する
+- 別 timezone を試したいときは `DOTFILES_TIMEZONE` を上書きする
+
 ## コマンドライン編集
 
 全体の編集操作規約は [docs/editing.md](./editing.md) を参照する。

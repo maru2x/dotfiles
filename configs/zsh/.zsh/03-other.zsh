@@ -5,6 +5,8 @@
 # 環境変数
 export DOTFILES_DIR="$HOME/dotfiles"
 export EDITOR='nvim'
+export DOTFILES_TIMEZONE="${DOTFILES_TIMEZONE:-Asia/Tokyo}"
+export TZ="$DOTFILES_TIMEZONE"
 
 # pyenv の初期化
 if [ -d "$HOME/.pyenv" ]; then

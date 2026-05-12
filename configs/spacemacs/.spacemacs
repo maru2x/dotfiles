@@ -587,7 +587,7 @@ This function is called immediately after `dotspacemacs/init', before layer
 configuration.
 It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
-  )
+  (setenv "TZ" (or (getenv "DOTFILES_TIMEZONE") "Asia/Tokyo")))
 (defun dotspacemacs/user-config ()
 
   ;; 端末版 Emacs と subprocess の文字コードを UTF-8 に揃える
@@ -599,6 +599,10 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
   (setq locale-coding-system 'utf-8-unix)
   (setq-default buffer-file-coding-system 'utf-8-unix)
   (modify-coding-system-alist 'process "git" '(utf-8-unix . utf-8-unix))
+  (setq calendar-time-zone 540
+        calendar-standard-time-zone-name "JST"
+        calendar-daylight-time-zone-name "JST"
+        calendar-location-name "Tokyo")
 
   ;; rbenv系コマンド実行のためshimsパスをemacsに伝達
   (let ((path "/Users/shujimurase/.rbenv/shims"))
@@ -610,6 +614,8 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
     (expand-file-name "~/dotfiles/bin/clipboard-copy"))
   (defconst my/clipboard-paste-command
     (expand-file-name "~/dotfiles/bin/clipboard-paste"))
+  (defconst my/ime-off-command
+    (expand-file-name "~/dotfiles/bin/ime-off"))
   (defvar my/native-interprogram-cut-function nil)
   (defvar my/native-interprogram-paste-function nil)
 
@@ -687,6 +693,73 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
         interprogram-cut-function #'my/interprogram-cut-dispatch
         interprogram-paste-function #'my/interprogram-paste-dispatch)
 
+  (defun my/ime-off ()
+    "Turn off external IME and Emacs input-method."
+    (interactive)
+    (ignore-errors
+      (deactivate-input-method))
+    (when (file-executable-p my/ime-off-command)
+      (ignore-errors
+        (let ((existing (get-process "dotfiles-ime-off"))
+              (process-connection-type nil))
+          (when existing
+            (delete-process existing))
+          (start-process "dotfiles-ime-off" nil my/ime-off-command)))))
+
+  (defconst my/evil-escape-sequences
+    '("jj" "っj" "っｊ" "ッj" "ッｊ")
+    "Sequences that should leave Evil insert-like states.")
+
+  (defvar my/evil-escape-emulation-map
+    (let ((map (make-sparse-keymap)))
+      (define-key map "j" #'my/evil-insert-j-or-escape)
+      (define-key map "ｊ" #'my/evil-insert-j-or-escape)
+      map)
+    "High-precedence keymap for insert-state escape handling.")
+
+  (defvar my/evil-escape-emulation-alist
+    `((my/evil-escape-terminal-mode . ,my/evil-escape-emulation-map))
+    "Emulation map alist used for terminal-safe escape handling.")
+
+  (defun my/evil-escape-matched-sequence ()
+    "Return the matched escape sequence immediately before point, or nil."
+    (let* ((max-len (apply #'max (mapcar #'length my/evil-escape-sequences)))
+           (start (max (point-min) (- (point) max-len)))
+           (text (buffer-substring-no-properties start (point))))
+      (seq-find (lambda (sequence)
+                  (string-suffix-p sequence text))
+                my/evil-escape-sequences)))
+
+  (defun my/evil-escape-post-self-insert ()
+    "Leave insert-like state when a configured escape sequence was typed."
+    (when-let ((matched (and (not buffer-read-only)
+                             (memq evil-state '(insert replace emacs))
+                             (my/evil-escape-matched-sequence))))
+      (delete-region (- (point) (length matched)) (point))
+      (evil-normal-state)))
+
+  (defun my/evil-insert-j-or-escape ()
+    "Insert the typed j-like character, then leave insert state on configured sequences."
+    (interactive)
+    (self-insert-command 1)
+    (my/evil-escape-post-self-insert))
+
+  (define-minor-mode my/evil-escape-terminal-mode
+    "Buffer-local mode that gives j/japanese-j escape handling higher precedence."
+    :init-value nil
+    :lighter nil)
+
+  (defun my/enable-evil-escape-terminal-mode ()
+    "Enable terminal-safe insert-state escape handling in the current buffer."
+    (unless (member 'my/evil-escape-emulation-alist emulation-mode-map-alists)
+      (setq-local emulation-mode-map-alists
+                  (cons 'my/evil-escape-emulation-alist emulation-mode-map-alists)))
+    (my/evil-escape-terminal-mode 1))
+
+  (defun my/disable-evil-escape-terminal-mode ()
+    "Disable terminal-safe insert-state escape handling in the current buffer."
+    (my/evil-escape-terminal-mode -1))
+
   ;; デフォルトで centered-cursor-mode を有効化
   (global-centered-cursor-mode 1)
 
@@ -729,20 +802,16 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
     (define-key evil-insert-state-map (kbd "C-p") 'previous-line)
     (define-key evil-insert-state-map (kbd "C-n") 'next-line)
     (define-key evil-insert-state-map (kbd "C-d") 'delete-char)
-    (define-key evil-insert-state-map (kbd "C-h") 'backward-delete-char))
-
-  ;; insert stateで "jj" を押すとESCに戻る
-  (use-package evil-escape
-    :after evil
-    :demand t
-    :init
-    ;; tmux/terminal 経由だと GUI よりわずかに入力遅延が乗るので少し長めに取る
-    (setq evil-escape-key-sequence "jj"
-          evil-escape-delay 0.3)
-    :config
-    (add-to-list 'evil-escape-inhibit-functions
-                 (lambda () (not (evil-insert-state-p))))
-    (evil-escape-mode 1))
+    (define-key evil-insert-state-map (kbd "C-h") 'backward-delete-char)
+    (add-hook 'evil-insert-state-entry-hook #'my/enable-evil-escape-terminal-mode)
+    (add-hook 'evil-emacs-state-entry-hook #'my/enable-evil-escape-terminal-mode)
+    (add-hook 'evil-replace-state-entry-hook #'my/enable-evil-escape-terminal-mode)
+    (add-hook 'evil-insert-state-exit-hook #'my/disable-evil-escape-terminal-mode)
+    (add-hook 'evil-emacs-state-exit-hook #'my/disable-evil-escape-terminal-mode)
+    (add-hook 'evil-replace-state-exit-hook #'my/disable-evil-escape-terminal-mode)
+    (add-hook 'evil-insert-state-exit-hook #'my/ime-off)
+    (add-hook 'evil-emacs-state-exit-hook #'my/ime-off)
+    (add-hook 'evil-replace-state-exit-hook #'my/ime-off))
 
   ;; company の補完候補を C-j/C-k で選択
   (with-eval-after-load 'company

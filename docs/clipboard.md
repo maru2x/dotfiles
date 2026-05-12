@@ -77,6 +77,8 @@ display server や terminal emulator 差分を Emacs 本体に持ち込まない
 
 - copy mode の `y` は tmux buffer と system clipboard の両方へ流れる
 - `prefix + p` は `bin/tmux-paste` を通り、clipboard 内容を bracketed paste で現在 pane に流す
+- zsh の `Ctrl+k` / `Ctrl+u` / `Ctrl+w` / `Meta+d` / `Meta+w` は local line editing に加えて system clipboard にも反映する
+- zsh の `Ctrl+y` は local cut buffer ではなく system clipboard から yank する
 
 狙い:
 shell や terminal app に対して paste の意味を保ったまま貼る
@@ -213,6 +215,7 @@ helper は動くが期待した local machine の clipboard には届かない
 - rich text や image clipboard は扱わない
 - zsh kill buffer と Emacs kill-ring の直接同期はやらない
 - `wl-paste --no-newline` を使うため、末尾改行は clipboard からそのままは戻さない
+- tmux は `set-clipboard off` にして helper と競合する OSC 52 経路を使わない
 
 ## 運用メモ
 

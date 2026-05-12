@@ -18,6 +18,7 @@
 - `scripts/`: `Makefile`で利用するシェルコマンド群
 - `docs/`: 運用ドキュメント
 - `Makefile`: `install`/`set-link`/`setup`など、`configs/`の内容を実際にマシンに展開する実行コマンド
+  - `make brew-diff`: Brewfile と現在の brew 環境の差分を確認し、Brewfile に入っていないローカルソフトを洗い出す
 - `Brewfile`: brew管理したいソフトウェアの一覧。詳細は[installed-software.md](docs/installed-software.md)
 
 `Makefile` の `setup` コマンドを実行することで、 **dotfiles** で管理するソフトウェアがインストールされ、それらの設定ファイルがマシン上に配置される．
@@ -43,6 +44,7 @@
 `Makefile` には以下のコマンドが用意されている。基本的には、 **##実行前準備**を済ませた状態で `make setup` を実行することでうまく行く。
 - Brewfileに記載されたソフトウェアの一括インストール => `make install`
 - configsに保存された設定ファイルへのリンク生成 => `make set-link`
+- Brewfile と現在の brew 環境との差分確認 => `make brew-diff`
 - 上記2つをいっぺんに -> `make setup`
 
 ## 運用
@@ -52,6 +54,8 @@
 - `make set-link` は既存ファイルやsymlinkを自動削除しない
 - `make set-link` の衝突判定や対処方針の詳細は複雑なので、 `docs/set-link.md` を参照
 - clipboard 周りの設計と診断方法は `docs/clipboard.md` を参照
+- tmux 周りの運用は `docs/tmux.md` を参照
+- IME / 日本語入力と Vim 系操作の調停は `docs/editing.md` を参照
 
 ## bin実行コマンド詳細
 

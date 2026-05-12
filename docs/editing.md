@@ -29,6 +29,33 @@
 - Spacemacs の insert state は `Ctrl+a/e/f/b/p/n/d/h` を Emacs 風にする
 - Spacemacs の company、Vim / Neovim の補完、zsh の補完候補選択では `Ctrl+j` / `Ctrl+k` を使う
 
+## IME / 日本語入力
+
+- Vim / Neovim は insert mode を抜けるたびに `~/dotfiles/bin/ime-off` を呼ぶ
+- Spacemacs は `evil` が normal state に戻るたびに `~/dotfiles/bin/ime-off` を呼ぶ
+- Spacemacs 側では外部 IME に加えて `deactivate-input-method` も実行する
+- Vim / Neovim では `jj` でも normal mode に戻れる
+
+### 対応 backend
+
+- `fcitx5-remote -c`
+- `ibus engine ...`
+- `macism ...`
+- `im-select ...`
+
+自動判定で困ったら以下を使う。
+
+- `DOTFILES_IME_BACKEND=fcitx5|ibus|macism|im-select|none`
+- `DOTFILES_IME_IBUS_ENGINE=xkb:us::eng`
+- `DOTFILES_IME_MACOS_SOURCE=com.apple.keylayout.ABC`
+- `DOTFILES_IME_DEBUG=1`
+
+診断:
+
+```bash
+bin/ime-doctor
+```
+
 ## 次に詰めること
 
 - Spacemacs 側の `Ctrl+k/u/w/y` や `Meta+f/b/d` をどこまで共通化するか決める

@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+set -eu
+
+script_dir=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+. "$script_dir/ime-backend.sh"
+
+ime_status=0
+if ime_try_turn_off; then
+  exit 0
+else
+  ime_status=$?
+fi
+
+if [ "$ime_status" -eq 2 ]; then
+  ime_debug "invalid DOTFILES_IME_BACKEND=${DOTFILES_IME_BACKEND:-}"
+else
+  ime_debug "no IME backend succeeded"
+fi
+
+exit 0

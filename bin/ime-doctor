@@ -1,0 +1,56 @@
+#!/usr/bin/env sh
+set -eu
+
+script_dir=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+. "$script_dir/ime-backend.sh"
+
+print_var() {
+  name="$1"
+  value="$2"
+
+  if [ -n "$value" ]; then
+    printf '%-28s %s\n' "$name" "$value"
+  else
+    printf '%-28s %s\n' "$name" "(unset)"
+  fi
+}
+
+print_command_status() {
+  name="$1"
+  if ime_has_command "$name"; then
+    printf '  %-24s %s\n' "$name" "$(ime_command_path "$name")"
+  else
+    printf '  %-24s %s\n' "$name" "not found"
+  fi
+}
+
+printf '== Context ==\n'
+print_var "uname -s" "$(uname -s 2>/dev/null || true)"
+print_var "XMODIFIERS" "${XMODIFIERS:-}"
+print_var "GTK_IM_MODULE" "${GTK_IM_MODULE:-}"
+print_var "QT_IM_MODULE" "${QT_IM_MODULE:-}"
+print_var "DISPLAY" "${DISPLAY:-}"
+print_var "WAYLAND_DISPLAY" "${WAYLAND_DISPLAY:-}"
+print_var "DOTFILES_IME_BACKEND" "${DOTFILES_IME_BACKEND:-auto}"
+print_var "DOTFILES_IME_IBUS_ENGINE" "${DOTFILES_IME_IBUS_ENGINE:-xkb:us::eng}"
+print_var "DOTFILES_IME_MACOS_SOURCE" "${DOTFILES_IME_MACOS_SOURCE:-com.apple.keylayout.ABC}"
+print_var "DOTFILES_IME_DEBUG" "${DOTFILES_IME_DEBUG:-0}"
+
+printf '\n== Command Availability ==\n'
+print_command_status fcitx5-remote
+print_command_status ibus
+print_command_status macism
+print_command_status im-select
+
+printf '\n== Resolution ==\n'
+if ! ime_backend_override_valid; then
+  printf '%-28s %s\n' "off backend" "invalid DOTFILES_IME_BACKEND=${DOTFILES_IME_BACKEND:-}"
+elif backend=$(ime_first_supported_backend); then
+  printf '%-28s %s\n' "off backend" "$backend"
+else
+  printf '%-28s %s\n' "off backend" "unavailable"
+fi
+
+printf '\n== Notes ==\n'
+printf '%s\n' "Vim/Neovim は InsertLeave で、Spacemacs は normal state 復帰時に ime-off を呼びます。"
+printf '%s\n' "fcitx5 は inactive へ戻し、ibus/macOS 系は英数 input source へ切り替えます。"
