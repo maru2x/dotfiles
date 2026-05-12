@@ -6,4 +6,4 @@ trap 'rm -f "$tmp"' EXIT HUP INT TERM
 
 "$HOME/dotfiles/bin/clipboard-paste" >"$tmp"
 tmux load-buffer "$tmp"
-tmux paste-buffer
+tmux paste-buffer -p

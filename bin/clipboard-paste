@@ -1,25 +1,19 @@
 #!/usr/bin/env sh
 set -eu
 
-if command -v pbpaste >/dev/null 2>&1; then
-  exec pbpaste
+script_dir=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+. "$script_dir/clipboard-backend.sh"
+
+paste_status=0
+if clipboard_try_paste; then
+  exit 0
+else
+  paste_status=$?
 fi
 
-if command -v wl-paste >/dev/null 2>&1; then
-  exec wl-paste
+if [ "$paste_status" -eq 2 ]; then
+  echo "Invalid DOTFILES_CLIPBOARD_BACKEND: ${DOTFILES_CLIPBOARD_BACKEND:-}" >&2
+else
+  echo "No clipboard backend succeeded" >&2
 fi
-
-if command -v xclip >/dev/null 2>&1; then
-  exec xclip -out -selection clipboard
-fi
-
-if command -v xsel >/dev/null 2>&1; then
-  exec xsel --clipboard --output
-fi
-
-if command -v powershell.exe >/dev/null 2>&1; then
-  exec powershell.exe -NoProfile -Command Get-Clipboard
-fi
-
-echo "No clipboard command found" >&2
 exit 1

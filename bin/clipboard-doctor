@@ -1,0 +1,72 @@
+#!/usr/bin/env sh
+set -eu
+
+script_dir=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+. "$script_dir/clipboard-backend.sh"
+
+print_var() {
+  name="$1"
+  value="$2"
+
+  if [ -n "$value" ]; then
+    printf '%-28s %s\n' "$name" "$value"
+  else
+    printf '%-28s %s\n' "$name" "(unset)"
+  fi
+}
+
+print_command_status() {
+  name="$1"
+  if clipboard_has_command "$name"; then
+    printf '  %-24s %s\n' "$name" "$(clipboard_command_path "$name")"
+  else
+    printf '  %-24s %s\n' "$name" "not found"
+  fi
+}
+
+print_backend_resolution() {
+  mode="$1"
+
+  if ! clipboard_backend_override_valid; then
+    printf '%-28s %s\n' "${mode} backend" "invalid DOTFILES_CLIPBOARD_BACKEND=${DOTFILES_CLIPBOARD_BACKEND:-}"
+    return
+  fi
+
+  if backend=$(clipboard_first_supported_backend "$mode"); then
+    printf '%-28s %s\n' "${mode} backend" "$backend"
+    return
+  fi
+
+  printf '%-28s %s\n' "${mode} backend" "unavailable"
+}
+
+printf '== Context ==\n'
+print_var "uname -s" "$(uname -s 2>/dev/null || true)"
+print_var "TERM" "${TERM:-}"
+print_var "TMUX" "${TMUX:-}"
+print_var "DISPLAY" "${DISPLAY:-}"
+print_var "WAYLAND_DISPLAY" "${WAYLAND_DISPLAY:-}"
+print_var "XDG_RUNTIME_DIR" "${XDG_RUNTIME_DIR:-}"
+print_var "WSL_INTEROP" "${WSL_INTEROP:-}"
+print_var "WSL_DISTRO_NAME" "${WSL_DISTRO_NAME:-}"
+print_var "SSH_CONNECTION" "${SSH_CONNECTION:-}"
+print_var "DOTFILES_CLIPBOARD_BACKEND" "${DOTFILES_CLIPBOARD_BACKEND:-auto}"
+print_var "DOTFILES_CLIPBOARD_DEBUG" "${DOTFILES_CLIPBOARD_DEBUG:-0}"
+
+printf '\n== Command Availability ==\n'
+print_command_status pbcopy
+print_command_status pbpaste
+print_command_status wl-copy
+print_command_status wl-paste
+print_command_status xclip
+print_command_status xsel
+print_command_status clip.exe
+print_command_status powershell.exe
+
+printf '\n== Resolution ==\n'
+print_backend_resolution copy
+print_backend_resolution paste
+
+printf '\n== Notes ==\n'
+printf '%s\n' "GUI Emacs uses native clipboard first and falls back to these helpers on failure."
+printf '%s\n' "Terminal Emacs and tmux shell workflows use these helpers directly."

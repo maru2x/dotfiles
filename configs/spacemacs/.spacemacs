@@ -78,7 +78,8 @@ This function should only modify configuration layer settings."
    ;; `dotspacemacs/user-config'. To use a local version of a package, use the
    ;; `:location' property: '(your-package :location "~/path/to/your-package/")
    ;; Also include the dependencies as they will not be resolved automatically.
-   dotspacemacs-additional-packages '(kanagawa-themes
+   dotspacemacs-additional-packages '(evil-escape
+                                      kanagawa-themes
                                       mixed-pitch
                                       org-appear
                                       org-modern)
@@ -609,29 +610,82 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
     (expand-file-name "~/dotfiles/bin/clipboard-copy"))
   (defconst my/clipboard-paste-command
     (expand-file-name "~/dotfiles/bin/clipboard-paste"))
+  (defvar my/native-interprogram-cut-function nil)
+  (defvar my/native-interprogram-paste-function nil)
+
+  (unless (eq interprogram-cut-function 'my/interprogram-cut-dispatch)
+    (setq my/native-interprogram-cut-function interprogram-cut-function))
+  (unless (eq interprogram-paste-function 'my/interprogram-paste-dispatch)
+    (setq my/native-interprogram-paste-function interprogram-paste-function))
+
+  (defun my/terminal-clipboard-bridge-available-p ()
+    "Return non-nil when clipboard helper scripts are available."
+    (and (file-executable-p my/clipboard-copy-command)
+         (file-executable-p my/clipboard-paste-command)))
 
   (defun my/system-clipboard-copy (text &optional _push)
-    "Copy TEXT to the system clipboard."
+    "Copy TEXT to the system clipboard helper."
     (when (and text (file-executable-p my/clipboard-copy-command))
       (with-temp-buffer
         (insert text)
         (let ((coding-system-for-write 'utf-8-unix))
-          (call-process-region (point-min) (point-max) my/clipboard-copy-command nil nil nil))))
-    text)
+          (zerop (call-process-region
+                  (point-min) (point-max)
+                  my/clipboard-copy-command nil nil nil))))))
 
   (defun my/system-clipboard-paste ()
-    "Return text from the system clipboard, or nil on failure."
+    "Return text from the system clipboard helper, or nil on failure."
     (when (file-executable-p my/clipboard-paste-command)
       (with-temp-buffer
         (let ((coding-system-for-read 'utf-8-unix))
           (when (zerop (call-process my/clipboard-paste-command nil t nil))
             (buffer-string))))))
 
+  (defun my/native-system-clipboard-copy (text &optional push)
+    "Copy TEXT with Emacs native clipboard integration."
+    (when (functionp my/native-interprogram-cut-function)
+      (condition-case nil
+          (progn
+            (funcall my/native-interprogram-cut-function text push)
+            t)
+        (wrong-number-of-arguments
+         (condition-case nil
+             (progn
+               (funcall my/native-interprogram-cut-function text)
+               t)
+           (error nil)))
+        (error nil))))
+
+  (defun my/native-system-clipboard-paste ()
+    "Return text from Emacs native clipboard integration, or nil."
+    (when (functionp my/native-interprogram-paste-function)
+      (condition-case nil
+          (funcall my/native-interprogram-paste-function)
+        (error nil))))
+
+  (defun my/interprogram-cut-dispatch (text &optional push)
+    "Copy TEXT using GUI-native clipboard first, then helper fallback."
+    (cond
+     ((and (display-graphic-p)
+           (my/native-system-clipboard-copy text push))
+      text)
+     ((and (my/terminal-clipboard-bridge-available-p)
+           (my/system-clipboard-copy text push))
+      text)
+     (t text)))
+
+  (defun my/interprogram-paste-dispatch ()
+    "Paste using GUI-native clipboard first, then helper fallback."
+    (or (and (display-graphic-p)
+             (my/native-system-clipboard-paste))
+        (and (my/terminal-clipboard-bridge-available-p)
+             (my/system-clipboard-paste))))
+
   (setq select-enable-clipboard t
         select-enable-primary nil
         save-interprogram-paste-before-kill t
-        interprogram-cut-function #'my/system-clipboard-copy
-        interprogram-paste-function #'my/system-clipboard-paste)
+        interprogram-cut-function #'my/interprogram-cut-dispatch
+        interprogram-paste-function #'my/interprogram-paste-dispatch)
 
   ;; デフォルトで centered-cursor-mode を有効化
   (global-centered-cursor-mode 1)
@@ -677,6 +731,19 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
     (define-key evil-insert-state-map (kbd "C-d") 'delete-char)
     (define-key evil-insert-state-map (kbd "C-h") 'backward-delete-char))
 
+  ;; insert stateで "jj" を押すとESCに戻る
+  (use-package evil-escape
+    :after evil
+    :demand t
+    :init
+    ;; tmux/terminal 経由だと GUI よりわずかに入力遅延が乗るので少し長めに取る
+    (setq evil-escape-key-sequence "jj"
+          evil-escape-delay 0.3)
+    :config
+    (add-to-list 'evil-escape-inhibit-functions
+                 (lambda () (not (evil-insert-state-p))))
+    (evil-escape-mode 1))
+
   ;; company の補完候補を C-j/C-k で選択
   (with-eval-after-load 'company
     (define-key company-active-map (kbd "C-j") 'company-select-next)
@@ -686,14 +753,6 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
   (with-eval-after-load 'ibuffer
     (evilified-state-evilify-map ibuffer-mode-map
       :mode ibuffer-mode))
-
-  ;; insert stateで "jj" を押すとESCに戻る
-  (with-eval-after-load 'evil-escape
-    (setq-default evil-escape-key-sequence "jj"
-                  evil-escape-delay 0.2)
-    (add-to-list 'evil-escape-inhibit-functions
-                 (lambda () (not (evil-insert-state-p))))
-    (evil-escape-mode 1))
 
   ;; Projectile除外設定
   (with-eval-after-load 'projectile

@@ -51,6 +51,7 @@
 - リモートの設定変更を反映する際は基本的に`make setup`で問題ないはず
 - `make set-link` は既存ファイルやsymlinkを自動削除しない
 - `make set-link` の衝突判定や対処方針の詳細は複雑なので、 `docs/set-link.md` を参照
+- clipboard 周りの設計と診断方法は `docs/clipboard.md` を参照
 
 ## bin実行コマンド詳細
 

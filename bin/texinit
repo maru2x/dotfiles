@@ -21,8 +21,45 @@ EOT
 mode="build"
 template="basic"
 name="main"
-script_dir="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-repo_root="$(CDPATH= cd -- "${script_dir}/.." && pwd)"
+
+resolve_script_dir() {
+  local source_path="${BASH_SOURCE[0]}"
+  local source_dir resolved
+
+  while [ -L "$source_path" ]; do
+    source_dir="$(CDPATH= cd -- "$(dirname -- "$source_path")" && pwd)"
+    resolved="$(readlink "$source_path")"
+    if [[ "$resolved" != /* ]]; then
+      source_path="${source_dir}/${resolved}"
+    else
+      source_path="$resolved"
+    fi
+  done
+
+  CDPATH= cd -- "$(dirname -- "$source_path")" && pwd
+}
+
+resolve_repo_root() {
+  if [ -n "${DOTFILES_DIR:-}" ] && [ -d "${DOTFILES_DIR}/templates/texinit" ]; then
+    printf '%s\n' "$DOTFILES_DIR"
+    return 0
+  fi
+
+  local resolved_script_dir
+  resolved_script_dir="$(resolve_script_dir)"
+  CDPATH= cd -- "${resolved_script_dir}/.." && pwd
+}
+
+require_template_file() {
+  local src="$1"
+
+  if [ ! -f "$src" ]; then
+    echo "Error: template file not found: $src" >&2
+    exit 1
+  fi
+}
+
+repo_root="$(resolve_repo_root)"
 template_root="${repo_root}/templates/texinit"
 
 while [ $# -gt 0 ]; do
@@ -65,8 +102,18 @@ esac
 
 if [ ! -d "$template_dir" ]; then
   echo "Error: template directory not found: $template_dir" >&2
+  echo "Set DOTFILES_DIR to your dotfiles checkout, or run texinit from the tracked repo path." >&2
   exit 1
 fi
+
+template_files=(Makefile .gitignore .latexmkrc main.tex)
+if [ "$template" = "mylab" ]; then
+  template_files+=(mylab-techrep.sty)
+fi
+
+for file in "${template_files[@]}"; do
+  require_template_file "${template_dir}/${file}"
+done
 
 targets=("$tex_file" .latexmkrc Makefile .gitignore)
 if [ "$template" = "mylab" ]; then
