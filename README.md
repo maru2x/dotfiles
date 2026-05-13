@@ -68,7 +68,17 @@ texのソースファイルや、pdfファイルの仮生成、`.latexmkrc`の�
 - `texinit` ... ltjsarticle + LuaLaTeX 形式の Texソースを作成 -> pdfファイルの仮生成までやってくれる．授業レポートなどに便利
 - `texinit --mylab` ... 研究室で使用する形式の Texソースを作成
 
-## 開発タスク
+## その他
 
-- tmux, zsh関連のコピーリング同期
-- magit + sqlite3 のバグ治す
+### codex mcp
+
+codexのmcpでよく使うもののインストールコマンドは以下：
+
+```
+codex mcp add openaiDeveloperDocs --url https://developers.openai.com/mcp
+codex mcp add context7 -- npx -y @upstash/context7-mcp
+codex mcp add github -- docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server
+codex mcp add playwright -- npx @playwright/mcp@latest
+codex mcp list
+```
+
