@@ -82,3 +82,9 @@ codex mcp add playwright -- npx @playwright/mcp@latest
 codex mcp list
 ```
 
+wsl上でブラウザ操作したいとき，マシンのchromeは使えないので別途再インストールする必要がある．
+以下コマンドでインストール可能：
+
+```
+npx playwright install chromium
+```
