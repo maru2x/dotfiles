@@ -23,3 +23,7 @@ export FZF_CTRL_T_OPTS="
   --preview 'bat --color=always --style=numbers --line-range=:500 {} 2>/dev/null || cat {}'
   --preview-window=right:60%:wrap
 "
+
+# fzf - bck-i-search（ターミナルの履歴管理ソフト）
+eval "$(fzf --zsh)"
+
