@@ -12,10 +12,10 @@ alias cdc='cd "$CHC_DIR"'
 alias cdw='cd "$CHW_DIR"'
 
 # プロジェクト起動・停止
-alias wup='tmux kill-session -t chw 2>/dev/null ; echo "$CHW_DIR" ; cd "$CHW_DIR" && make up-all && tmuxinator chw'
-alias cup='tmux kill-session -t chc 2>/dev/null ; tmux kill-session -t chw 2>/dev/null ; cd "$CHC_DIR" && dcdu && tmuxinator start chc --no-attach && cd "$CHW_DIR" && make up-all && tmuxinator start chw && tmux attach -t chw'
-alias wdn='tmux kill-session -t chw 2>/dev/null ; cd "$CHW_DIR" && make down'
-alias cdn='tmux kill-session -t chw 2>/dev/null ; tmux kill-session -t chc 2>/dev/null ; cd "$CHW_DIR" && make down ; cd "$CHC_DIR" && dc down'
+alias wup='echo "$CHW_DIR" ; cd "$CHW_DIR" && make up-all'
+alias cup='cd "$CHC_DIR" && dcdu && cd "$CHW_DIR" && make up-all'
+alias wdn='cd "$CHW_DIR" && make down'
+alias cdn='cd "$CHW_DIR" && make down ; cd "$CHC_DIR" && dc down'
 
 # Ruby ビルド用のコンパイラ指定（macOS）
 if [[ "$(uname -s)" == "Darwin" ]]; then
