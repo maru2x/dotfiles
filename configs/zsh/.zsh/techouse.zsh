@@ -26,14 +26,6 @@ fi
 PROMPT="%K{red}%F{black}%n ($(arch)):%~"$'\n'"%# %f%k"
 
 # ========================================
-# Docker Compose 用の短縮エイリアス
-# ========================================
-
-alias dc='docker compose'
-alias dcud='docker compose up -d'
-alias dcdu='docker compose down ; docker compose up -d'
-
-# ========================================
 # rbenv (Ruby version management)
 # ========================================
 
