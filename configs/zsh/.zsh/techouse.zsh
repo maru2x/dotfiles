@@ -12,8 +12,8 @@ alias cdc='cd "$CHC_DIR"'
 alias cdw='cd "$CHW_DIR"'
 
 # プロジェクト起動・停止
-alias wup='echo "$CHW_DIR" ; cd "$CHW_DIR" && make up-all'
-alias cup='cd "$CHC_DIR" && dcdu && cd "$CHW_DIR" && make up-all'
+alias wup='echo "$CHW_DIR" ; cd "$CHW_DIR" && docker compose --profile base --profile microservices --profile others down --remove-orphans ; make up-all'
+alias cup='cd "$CHC_DIR" && dcdu && cd "$CHW_DIR" && docker compose --profile base --profile microservices --profile others down --remove-orphans ; make up-all'
 alias wdn='cd "$CHW_DIR" && make down'
 alias cdn='cd "$CHW_DIR" && make down ; cd "$CHC_DIR" && dc down'
 
