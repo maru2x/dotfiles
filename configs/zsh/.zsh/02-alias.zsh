@@ -10,6 +10,10 @@ alias zz='source ~/.zshrc'
 # 移動ショートカット
 alias cdd='cd $DOTFILES_DIR'
 alias cda='cd $HOME/adids'
+alias cdac='cd $HOME/adids/core'
+alias cdat='cd $HOME/adids/testbed'
+alias cdae='cd $HOME/adids/elk'
+alias cdap='cd $HOME/adids/potter'
 
 # アプリ起動ショートカット
 alias x='codex'
@@ -25,4 +29,3 @@ alias zd='lazydocker'
 alias dc='docker compose'
 alias dcud='docker compose up -d'
 alias dcdu='docker compose down ; docker compose up -d'
-

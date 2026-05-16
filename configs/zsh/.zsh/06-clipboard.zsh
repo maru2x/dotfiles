@@ -2,7 +2,7 @@
 # clipboard integration for zle
 # ========================================
 
-if [[ -o interactive ]]; then
+if [[ -o interactive && -o zle ]]; then
   typeset -g DOTFILES_CLIPBOARD_COPY_COMMAND="${DOTFILES_DIR:-$HOME/dotfiles}/bin/clipboard-copy"
   typeset -g DOTFILES_CLIPBOARD_PASTE_COMMAND="${DOTFILES_DIR:-$HOME/dotfiles}/bin/clipboard-paste"
 

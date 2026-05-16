@@ -2,7 +2,7 @@
 # SSH Agent
 # ========================================
 
-if [[ -o interactive ]] && command -v ssh-agent >/dev/null 2>&1 && command -v ssh-add >/dev/null 2>&1; then
+if [[ -o interactive ]] && [[ -t 0 && -t 1 ]] && command -v ssh-agent >/dev/null 2>&1 && command -v ssh-add >/dev/null 2>&1; then
   agent_env="$HOME/.ssh/agent.env"
 
   load_ssh_agent_env() {
@@ -40,10 +40,10 @@ if [[ -o interactive ]] && command -v ssh-agent >/dev/null 2>&1 && command -v ss
     fi
 
     if [[ "$(uname -s)" == "Darwin" ]]; then
-      ssh-add --apple-use-keychain "$key" >/dev/null </dev/tty 2>/dev/null || \
-        ssh-add "$key" >/dev/null </dev/tty
+      ssh-add --apple-use-keychain "$key" >/dev/null </dev/null 2>&1 || \
+        ssh-add "$key" >/dev/null </dev/null 2>&1
     else
-      ssh-add "$key" >/dev/null </dev/tty
+      ssh-add "$key" >/dev/null </dev/null 2>&1
     fi
   }
 

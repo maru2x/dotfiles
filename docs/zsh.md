@@ -121,6 +121,10 @@ rm -f ~/.config/techouse/enabled
 zz      # ~/.zshrc をリロード
 cdd     # dotfiles ディレクトリへ移動
 cda     # ~/adids へ移動
+cdac    # ~/adids/core へ移動
+cdat    # ~/adids/testbed へ移動
+cdae    # ~/adids/elk へ移動
+cdap    # ~/adids/potter へ移動
 ```
 
 ## fzf
