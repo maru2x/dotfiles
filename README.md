@@ -65,7 +65,7 @@
 texのソースファイルや、pdfファイルの仮生成、`.latexmkrc`の生成などを行ってくれる。
 生成テンプレート本体は `templates/texinit/` に分離して管理している。
 実行可能なコマンドは以下の２つ。
-- `texinit` ... ltjsarticle + LuaLaTeX 形式の Texソースを作成 -> pdfファイルの仮生成までやってくれる．授業レポートなどに便利
+- `texinit` ... ujarticle + upLaTeX / dvipdfmx 形式の Texソースを作成 -> pdfファイルの仮生成までやってくれる．授業レポートなどに便利
 - `texinit --mylab` ... 研究室で使用する形式の Texソースを作成
 
 ## その他

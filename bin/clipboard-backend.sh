@@ -72,7 +72,7 @@ clipboard_backend_supported() {
       clipboard_has_command pbpaste
       ;;
     wsl:copy)
-      clipboard_running_in_wsl && clipboard_has_command clip.exe
+      clipboard_running_in_wsl && clipboard_has_command powershell.exe
       ;;
     wsl:paste)
       clipboard_running_in_wsl && clipboard_has_command powershell.exe
@@ -90,7 +90,7 @@ clipboard_backend_supported() {
       clipboard_has_x11 && clipboard_has_command xsel
       ;;
     windows:copy)
-      clipboard_has_command clip.exe
+      clipboard_has_command powershell.exe
       ;;
     windows:paste)
       clipboard_has_command powershell.exe
@@ -124,7 +124,7 @@ clipboard_copy_with_backend() {
       pbcopy <"$file"
       ;;
     wsl | windows)
-      clip.exe <"$file"
+      powershell.exe -NoProfile -Command '[Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false); $text = [Console]::In.ReadToEnd(); Set-Clipboard -Value $text' <"$file"
       ;;
     wayland)
       wl-copy <"$file"
@@ -149,7 +149,7 @@ clipboard_paste_with_backend() {
       pbpaste
       ;;
     wsl | windows)
-      powershell.exe -NoProfile -Command Get-Clipboard
+      powershell.exe -NoProfile -Command '[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); $OutputEncoding = [Console]::OutputEncoding; Get-Clipboard -Raw'
       ;;
     wayland)
       wl-paste --no-newline

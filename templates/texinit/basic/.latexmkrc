@@ -1,3 +1,3 @@
-$pdf_mode = 1;
-$pdflatex = 'lualatex -interaction=nonstopmode -file-line-error %O %S';
-$lualatex = 'lualatex -interaction=nonstopmode -file-line-error %O %S';
+$pdf_mode = 3;
+$latex = 'uplatex -interaction=nonstopmode -file-line-error %O %S';
+$dvipdf = 'dvipdfmx %O -o %D %S';
