@@ -15,5 +15,6 @@ if [ "$paste_status" -eq 2 ]; then
   echo "Invalid DOTFILES_CLIPBOARD_BACKEND: ${DOTFILES_CLIPBOARD_BACKEND:-}" >&2
 else
   echo "No clipboard backend succeeded" >&2
+  echo "-> run: clipboard-doctor" >&2
 fi
 exit 1

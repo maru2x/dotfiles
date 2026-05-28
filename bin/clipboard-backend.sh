@@ -8,6 +8,10 @@ clipboard_command_path() {
   command -v "$1" 2>/dev/null || true
 }
 
+clipboard_has_tmux() {
+  [ -n "${TMUX:-}" ] && command -v tmux >/dev/null 2>&1
+}
+
 clipboard_has_wayland() {
   [ -n "${WAYLAND_DISPLAY:-}" ] && [ -n "${XDG_RUNTIME_DIR:-}" ]
 }
@@ -32,12 +36,12 @@ clipboard_backend_candidates() {
 
   case "$requested" in
     "" | auto)
-      printf '%s\n' "macos wsl wayland xclip xsel windows"
+      printf '%s\n' "macos wsl wayland xclip xsel windows tmux"
       ;;
     x11)
       printf '%s\n' "xclip xsel"
       ;;
-    macos | wayland | xclip | xsel | wsl | windows)
+    macos | wayland | xclip | xsel | wsl | windows | tmux)
       printf '%s\n' "$requested"
       ;;
     none)
@@ -51,7 +55,7 @@ clipboard_backend_candidates() {
 
 clipboard_backend_override_valid() {
   case "${DOTFILES_CLIPBOARD_BACKEND:-auto}" in
-    "" | auto | macos | wsl | wayland | x11 | xclip | xsel | windows | none)
+    "" | auto | macos | wsl | wayland | x11 | xclip | xsel | windows | tmux | none)
       return 0
       ;;
     *)
@@ -95,6 +99,9 @@ clipboard_backend_supported() {
     windows:paste)
       clipboard_has_command powershell.exe
       ;;
+    tmux:copy | tmux:paste)
+      clipboard_has_tmux
+      ;;
     *)
       return 1
       ;;
@@ -130,10 +137,13 @@ clipboard_copy_with_backend() {
       wl-copy <"$file"
       ;;
     xclip)
-      xclip -in -selection clipboard <"$file"
+      xclip -in -selection clipboard -target UTF8_STRING <"$file"
       ;;
     xsel)
       xsel --clipboard --input <"$file"
+      ;;
+    tmux)
+      tmux load-buffer "$file"
       ;;
     *)
       return 1
@@ -152,13 +162,18 @@ clipboard_paste_with_backend() {
       powershell.exe -NoProfile -Command '[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); $OutputEncoding = [Console]::OutputEncoding; Get-Clipboard -Raw'
       ;;
     wayland)
+      # --no-newline: wl-paste が末尾に付加する余分な改行を除去する
+      # 副作用: コピー元が \n で終わっていた場合もその改行が消える
       wl-paste --no-newline
       ;;
     xclip)
-      xclip -out -selection clipboard
+      xclip -out -selection clipboard -target UTF8_STRING
       ;;
     xsel)
       xsel --clipboard --output
+      ;;
+    tmux)
+      tmux save-buffer -
       ;;
     *)
       return 1

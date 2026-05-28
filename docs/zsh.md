@@ -127,15 +127,46 @@ cdae    # ~/adids/elk へ移動
 cdap    # ~/adids/potter へ移動
 ```
 
-## fzf
+## キーバインド一覧
 
-- key-bindings と completion は interactive TTY のときだけ読み込む
+### Emacs 移動・編集（標準）
 
-| キー | 内容 |
+| キー | 動作 |
 |------|------|
-| `Ctrl+T` | ファイル検索（bat プレビュー付き） |
-| `Ctrl+R` | コマンド履歴検索 |
-| `Alt+C` | ディレクトリ検索して移動 |
+| `Ctrl+A` | 行頭へ移動 |
+| `Ctrl+E` | 行末へ移動 |
+| `Ctrl+F` | 1文字右へ |
+| `Ctrl+B` | 1文字左へ |
+| `Ctrl+N` | 次の履歴 |
+| `Ctrl+P` | 前の履歴 |
+| `Ctrl+D` | 文字削除 / EOF |
+| `Ctrl+K` | カーソル以降を削除 → システムclipboard |
+| `Ctrl+U` | 行全体削除 → システムclipboard |
+| `Ctrl+W` | 前の単語削除 → システムclipboard |
+| `Ctrl+Y` | システムclipboardからペースト |
+
+### 補完メニュー内
+
+| キー | 動作 |
+|------|------|
+| `Ctrl+J` | 候補を下へ |
+| `Ctrl+K` | 候補を上へ |
+
+### fzf
+
+key-bindings と completion は interactive TTY のときだけ読み込む。
+`Ctrl+X` を fzf 拡張のプレフィックスに統一している。
+
+| キー | 対象 | 動作 |
+|------|------|------|
+| `Ctrl+R` | 履歴 | fzf で検索 |
+| `Ctrl+X f` | ファイル | パスをコマンドラインに挿入（bat プレビュー付き） |
+| `Ctrl+X d` | ディレクトリ | fzf で選択して cd |
+| `Ctrl+X s` | ファイル中身 | livegrep（fzf内でリアルタイム検索） |
+| `Ctrl+X g` | git branch | fzf で選択して checkout |
+| `<コマンド> **<Tab>` | ファイル/ディレクトリ | fzf 補完 |
+
+`fif <キーワード>` でコマンドラインから中身検索することもできる。
 
 ## エイリアス一覧
 
@@ -143,8 +174,22 @@ cdap    # ~/adids/potter へ移動
 
 ```bash
 vim / vi        # nvim
+zz              # ~/.zshrc をリロード
+zg              # lazygit
+zd              # lazydocker
 x               # codex
 enw             # emacs -nw
+```
+
+### ディレクトリ移動
+
+```bash
+cdd             # ~/dotfiles
+cda             # ~/adids
+cdac            # ~/adids/core
+cdat            # ~/adids/testbed
+cdae            # ~/adids/elk
+cdap            # ~/adids/potter
 ```
 
 ### Docker

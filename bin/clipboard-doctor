@@ -70,3 +70,4 @@ print_backend_resolution paste
 printf '\n== Notes ==\n'
 printf '%s\n' "GUI Emacs uses native clipboard first and falls back to these helpers on failure."
 printf '%s\n' "Terminal Emacs and tmux shell workflows use these helpers directly."
+printf '%s\n' "tmux backend is used as a last resort when no system clipboard is available (e.g. SSH)."

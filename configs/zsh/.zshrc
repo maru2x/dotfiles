@@ -16,7 +16,7 @@ fi
 # ========================================
 # モジュール読み込み
 # ========================================
-for config_file in ~/.zsh/*.zsh(N); do
+for config_file in ~/.zsh/*.zsh(N-); do
   if [[ "$(basename "$config_file")" == "techouse.zsh" ]]; then
     continue
   fi
