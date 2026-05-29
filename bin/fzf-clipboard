@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 # クリップボード履歴からfzfで選択し、選択テキストをstdoutへ出力
 
 script_dir=$(CDPATH= cd -- "$(dirname "$0")" && pwd)

@@ -28,8 +28,33 @@
 - `bin/clipboard-paste`
 - `bin/clipboard-doctor`
 - `bin/tmux-paste`
+- `bin/fzf-clipboard`
 - `configs/spacemacs/.spacemacs`
 - `configs/tmux/.tmux.conf`
+- `configs/zsh/.zsh/05-fzf.zsh`
+
+## クリップボード履歴
+
+### 仕組み
+
+`bin/clipboard-copy` でコピーするたびに `~/.clipboard_history` へ追記される。
+
+- 改行は `\n` にエスケープして1エントリ1行で保存
+- 重複エントリは削除（最新が先頭に来る）
+- 最大1000件でトリム
+
+OSのクリップボード（ブラウザ等、`clipboard-copy` を経由しないコピー）は、`fzf-clipboard` 起動時に現在の内容を同期する。
+
+### 操作
+
+| 環境 | キー | 動作 |
+|---|---|---|
+| zsh | `Ctrl+X P` | 履歴からfzfで選択 → コマンドラインに挿入 |
+| tmux | `Prefix + P` | 履歴からfzfで選択 → 現在ペインにペースト |
+
+### 関連スクリプト
+
+- `bin/fzf-clipboard`: 履歴ファイルをfzfで表示し、選択内容をstdoutへ出力
 
 ## レイヤ構成
 

@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+current_pane_id=$(tmux show-option -gqv @fzfbuf_pane)
+current_session=$(tmux show-option -gqv @fzfbuf_session)
+
+if ! tmux list-windows -t "$current_session" -F "#{window_name}" 2>/dev/null | grep -qx "bg"; then
+  tmux new-window -d -n bg -t "$current_session"
+  tmux set-window-option -t "${current_session}:bg" automatic-rename off
+fi
+
+panes=$(tmux list-panes -t "${current_session}:bg" \
+  -F "#{pane_id}  #{pane_current_path}  (#{pane_current_command})" \
+  2>/dev/null)
+
+if [ -z "$panes" ]; then
+  echo "bg is empty. Use 'prefix+x' to send a pane to bg."
+  printf 'Press any key...'
+  read -r _
+  exit 0
+fi
+
+selected=$(printf '%s\n' "$panes" | fzf --prompt='buffer> ' --no-sort)
+[ -z "$selected" ] && exit 0
+
+target_pane_id=$(printf '%s' "$selected" | awk '{print $1}')
+tmux swap-pane -d -s "$target_pane_id" -t "$current_pane_id"

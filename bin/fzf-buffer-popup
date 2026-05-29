@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+# run-shell経由で呼ばれる。#{pane_id} #{session_name} #{pane_current_path} は
+# run-shellがフォーマット展開済みの値を $1 $2 $3 として渡す。
+# display-popup内ではフォーマット展開が効かないため、tmux optionに保存して橋渡しする。
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+tmux set-option -g @fzfbuf_pane "$1"
+tmux set-option -g @fzfbuf_session "$2"
+tmux display-popup -d "$3" -E "$HOME/dotfiles/bin/fzf-buffer"

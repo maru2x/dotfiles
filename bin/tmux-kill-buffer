@@ -1,0 +1,24 @@
+#!/usr/bin/env sh
+# prefix+x: 現在のペインをbgウィンドウへ移動（join-pane）
+# run-shellから呼ばれる: $1=pane_id, $2=session（フォーマット展開済み）
+
+current_pane_id="${1:-$(tmux display-message -p '#{pane_id}')}"
+current_session="${2:-$(tmux display-message -p '#{session_name}')}"
+
+# bgウィンドウが存在しなければ作成
+if ! tmux list-windows -t "$current_session" -F "#{window_name}" 2>/dev/null | grep -qx "bg"; then
+  tmux new-window -d -n bg -t "$current_session"
+  tmux set-window-option -t "${current_session}:bg" automatic-rename off
+fi
+
+# 現在のウィンドウのペイン数を確認
+current_window=$(tmux display-message -p -t "$current_pane_id" '#{window_id}')
+pane_count=$(tmux list-panes -t "$current_window" 2>/dev/null | wc -l | tr -d ' ')
+
+# 外枠維持: 最後の1ペインなら先に新しいシェルを用意
+if [ "$pane_count" -le 1 ]; then
+  tmux split-window -d -t "$current_pane_id"
+fi
+
+# 現在のペインをbgへ移動（join-pane = ペインをそのままbgウィンドウへ追加）
+tmux join-pane -d -s "$current_pane_id" -t "${current_session}:bg"
