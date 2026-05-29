@@ -202,6 +202,34 @@ clipboard_try_copy_from_file() {
   return 1
 }
 
+CLIPBOARD_HISTORY_FILE="${CLIPBOARD_HISTORY_FILE:-${HOME}/.clipboard_history}"
+CLIPBOARD_HISTORY_MAX="${CLIPBOARD_HISTORY_MAX:-1000}"
+
+clipboard_history_append() {
+  file="$1"
+
+  # Multi-line content を1行に圧縮（改行を \n にエスケープ）
+  entry=$(awk '{if(NR>1) printf "\\n"; printf "%s", $0}' <"$file")
+
+  # 空・空白のみはスキップ
+  case "$entry" in
+    "" | *[![:space:]]*) : ;;
+    *) return 0 ;;
+  esac
+  [ -z "$entry" ] && return 0
+
+  hist_dir=$(dirname "$CLIPBOARD_HISTORY_FILE")
+  [ -d "$hist_dir" ] || mkdir -p "$hist_dir"
+
+  # 先頭に追加しつつ重複除去・件数制限
+  tmpfile="${TMPDIR:-/tmp}/clipboard-hist.$$"
+  {
+    printf '%s\n' "$entry"
+    [ -f "$CLIPBOARD_HISTORY_FILE" ] && grep -vxF "$entry" "$CLIPBOARD_HISTORY_FILE" || true
+  } | head -n "$CLIPBOARD_HISTORY_MAX" >"$tmpfile"
+  mv "$tmpfile" "$CLIPBOARD_HISTORY_FILE"
+}
+
 clipboard_try_paste() {
   candidate_list="$(clipboard_backend_candidates paste)" || return $?
 

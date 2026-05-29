@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+# gitブランチをfzfで選択し、ブランチ名をstdoutへ出力
+git branch --all 2>/dev/null \
+  | grep -v HEAD \
+  | sed 's/^[ *]*//' \
+  | sed 's|remotes/origin/||' \
+  | sort -u \
+  | fzf \
+    --prompt='branch> ' \
+    --preview 'git log --oneline --graph --color=always {} 2>/dev/null | head -20'

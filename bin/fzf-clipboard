@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+# クリップボード履歴からfzfで選択し、選択テキストをstdoutへ出力
+
+script_dir=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+. "$script_dir/clipboard-backend.sh"
+
+hist_file="${CLIPBOARD_HISTORY_FILE:-$HOME/.clipboard_history}"
+
+# fzfを開く前にOSクリップボードの現在の内容を履歴へ同期する
+# （ブラウザ等、clipboard-copyを経由しないコピーを拾うため）
+tmp="${TMPDIR:-/tmp}/fzf-clipboard-sync.$$"
+if clipboard_try_paste >"$tmp" 2>/dev/null && [ -s "$tmp" ]; then
+  clipboard_history_append "$tmp"
+fi
+rm -f "$tmp"
+
+[ -f "$hist_file" ] || exit 0
+
+selected=$(fzf \
+  --prompt='clipboard> ' \
+  --preview 'printf "%s" {} | sed "s/\\\\n/\n/g"' \
+  --preview-window='right:50%:wrap' \
+  --no-sort \
+  <"$hist_file") || exit 0
+
+[ -z "$selected" ] && exit 0
+printf '%s' "$selected" | sed 's/\\n/\n/g'

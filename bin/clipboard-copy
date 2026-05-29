@@ -10,6 +10,7 @@ cat >"$tmp"
 
 copy_status=0
 if clipboard_try_copy_from_file "$tmp"; then
+  clipboard_history_append "$tmp"
   exit 0
 else
   copy_status=$?

@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+# ファイルをfzfで選択し、パスをstdoutへ出力
+if command -v fd >/dev/null 2>&1; then
+  fd --type f --hidden --follow --exclude .git
+else
+  find . -type f -not -path '*/.git/*'
+fi | fzf \
+  --prompt='file> ' \
+  --preview 'bat --color=always --style=numbers --line-range=:500 {} 2>/dev/null || cat {}' \
+  --preview-window='right:60%:wrap'

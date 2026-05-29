@@ -24,14 +24,58 @@ export FZF_CTRL_T_OPTS="
   --preview-window=right:60%:wrap
 "
 
-# fzf - bck-i-search（ターミナルの履歴管理ソフト）
+# fzf - bck-i-search（Ctrl+R）
 eval "$(fzf --zsh)"
 
 # Ctrl+T / Alt+C のデフォルトバインドを外して Ctrl+X に統一
 bindkey -r '^T'
 bindkey -r '\ec'
 
-# ファイル中身のlivegrep検索（Ctrl+X s）
+# ========================================
+# bin/fzf-* スクリプトへの薄いラッパー
+# ========================================
+
+_fzf_file_widget() {
+  local selected
+  selected=$(fzf-file) || { zle reset-prompt; return 0; }
+  [[ -z "$selected" ]] && zle reset-prompt && return 0
+  LBUFFER+="$selected"
+  zle reset-prompt
+}
+
+_fzf_dir_widget() {
+  local dir
+  dir=$(fzf-dir) || { zle reset-prompt; return 0; }
+  [[ -z "$dir" ]] && zle reset-prompt && return 0
+  builtin cd "$dir"
+  zle reset-prompt
+}
+
+_fzf_git_branch_widget() {
+  local branch
+  branch=$(fzf-git-branch) || { zle reset-prompt; return 0; }
+  [[ -z "$branch" ]] && zle reset-prompt && return 0
+  git checkout "$branch"
+  zle reset-prompt
+}
+
+_fzf_clipboard_history_widget() {
+  local selected
+  selected=$(fzf-clipboard) || { zle reset-prompt; return 0; }
+  [[ -z "$selected" ]] && zle reset-prompt && return 0
+  LBUFFER+="$selected"
+  zle reset-prompt
+}
+
+_fzf_clipboard_paste_widget() {
+  local content
+  content=$(clipboard-paste 2>/dev/null) || { zle reset-prompt; return 0; }
+  [[ -z "$content" ]] && zle reset-prompt && return 0
+  LBUFFER+="$content"
+  zle reset-prompt
+}
+
+# livegrep検索のみzsh内で維持（インタラクティブなreloadがZLE依存のため）
 _fzf_fif_widget() {
   local result
   result=$(fzf --ansi --disabled \
@@ -56,29 +100,17 @@ fif() {
     | awk -F: '{print $1":"$2}'
 }
 
-# git branch をfzfで選択してチェックアウト
-_fzf_git_branch_widget() {
-  local branch
-  branch=$(git branch --all 2>/dev/null \
-    | grep -v HEAD \
-    | sed 's/^[ *]*//' \
-    | sed 's|remotes/origin/||' \
-    | sort -u \
-    | fzf --preview 'git log --oneline --graph --color=always {1} 2>/dev/null | head -20')
-  if [[ -n "$branch" ]]; then
-    git checkout "$branch"
-    zle reset-prompt
-  fi
-}
-
-zle -N _fzf_fif_widget
-zle -N fzf-file-widget
-zle -N fzf-cd-widget
+zle -N _fzf_file_widget
+zle -N _fzf_dir_widget
 zle -N _fzf_git_branch_widget
+zle -N _fzf_clipboard_history_widget
+zle -N _fzf_clipboard_paste_widget
+zle -N _fzf_fif_widget
 
-# Ctrl+X * バインド
-bindkey '^Xf' fzf-file-widget   # ファイル検索
-bindkey '^Xd' fzf-cd-widget     # ディレクトリ移動
-bindkey '^Xs' _fzf_fif_widget   # ファイル中身検索
-bindkey '^Xg' _fzf_git_branch_widget  # git branch
-
+# Ctrl+X * バインド（セカンドキーはtmuxのprefix+*と統一）
+bindkey '^Xf' _fzf_file_widget               # ファイル検索
+bindkey '^Xd' _fzf_dir_widget                # ディレクトリ移動
+bindkey '^Xs' _fzf_fif_widget                # ファイル中身検索
+bindkey '^Xg' _fzf_git_branch_widget         # git branch
+bindkey '^XP' _fzf_clipboard_history_widget  # クリップボード履歴
+bindkey '^Xp' _fzf_clipboard_paste_widget    # クリップボードから貼り付け
