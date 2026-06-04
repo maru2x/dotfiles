@@ -30,6 +30,24 @@ clipboard_debug() {
   fi
 }
 
+clipboard_timeout_command() {
+  if clipboard_has_command timeout; then
+    printf '%s\n' "timeout"
+  elif clipboard_has_command gtimeout; then
+    printf '%s\n' "gtimeout"
+  fi
+}
+
+clipboard_run() {
+  timeout_seconds="${DOTFILES_CLIPBOARD_TIMEOUT:-2}"
+
+  if timeout_command=$(clipboard_timeout_command); then
+    "$timeout_command" -k 1 -- "$timeout_seconds" "$@"
+  else
+    "$@"
+  fi
+}
+
 clipboard_backend_candidates() {
   mode="$1"
   requested="${DOTFILES_CLIPBOARD_BACKEND:-auto}"
@@ -128,22 +146,22 @@ clipboard_copy_with_backend() {
 
   case "$backend" in
     macos)
-      pbcopy <"$file"
+      clipboard_run pbcopy <"$file"
       ;;
     wsl | windows)
-      powershell.exe -NoProfile -Command '[Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false); $text = [Console]::In.ReadToEnd(); Set-Clipboard -Value $text' <"$file"
+      clipboard_run powershell.exe -NoProfile -Command '[Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false); $text = [Console]::In.ReadToEnd(); Set-Clipboard -Value $text' <"$file"
       ;;
     wayland)
-      wl-copy <"$file"
+      clipboard_run wl-copy <"$file"
       ;;
     xclip)
-      xclip -in -selection clipboard -target UTF8_STRING <"$file"
+      clipboard_run xclip -in -selection clipboard -target UTF8_STRING <"$file"
       ;;
     xsel)
-      xsel --clipboard --input <"$file"
+      clipboard_run xsel --clipboard --input <"$file"
       ;;
     tmux)
-      tmux load-buffer "$file"
+      clipboard_run tmux load-buffer "$file"
       ;;
     *)
       return 1
@@ -156,24 +174,24 @@ clipboard_paste_with_backend() {
 
   case "$backend" in
     macos)
-      pbpaste
+      clipboard_run pbpaste
       ;;
     wsl | windows)
-      powershell.exe -NoProfile -Command '[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); $OutputEncoding = [Console]::OutputEncoding; Get-Clipboard -Raw'
+      clipboard_run powershell.exe -NoProfile -Command '[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); $OutputEncoding = [Console]::OutputEncoding; Get-Clipboard -Raw'
       ;;
     wayland)
       # --no-newline: wl-paste が末尾に付加する余分な改行を除去する
       # 副作用: コピー元が \n で終わっていた場合もその改行が消える
-      wl-paste --no-newline
+      clipboard_run wl-paste --no-newline
       ;;
     xclip)
-      xclip -out -selection clipboard -target UTF8_STRING
+      clipboard_run xclip -out -selection clipboard -target UTF8_STRING
       ;;
     xsel)
-      xsel --clipboard --output
+      clipboard_run xsel --clipboard --output
       ;;
     tmux)
-      tmux save-buffer -
+      clipboard_run tmux save-buffer -
       ;;
     *)
       return 1
@@ -195,8 +213,14 @@ clipboard_try_copy_from_file() {
     if clipboard_copy_with_backend "$backend" "$file"; then
       clipboard_debug "copy backend $backend succeeded"
       return 0
+    else
+      status=$?
     fi
-    clipboard_debug "copy backend $backend failed"
+    if [ "$status" -eq 124 ] || [ "$status" -eq 137 ]; then
+      clipboard_debug "copy backend $backend timed out after ${DOTFILES_CLIPBOARD_TIMEOUT:-2}s"
+    else
+      clipboard_debug "copy backend $backend failed with status $status"
+    fi
   done
 
   return 1
@@ -243,8 +267,14 @@ clipboard_try_paste() {
     if clipboard_paste_with_backend "$backend"; then
       clipboard_debug "paste backend $backend succeeded"
       return 0
+    else
+      status=$?
     fi
-    clipboard_debug "paste backend $backend failed"
+    if [ "$status" -eq 124 ] || [ "$status" -eq 137 ]; then
+      clipboard_debug "paste backend $backend timed out after ${DOTFILES_CLIPBOARD_TIMEOUT:-2}s"
+    else
+      clipboard_debug "paste backend $backend failed with status $status"
+    fi
   done
 
   return 1

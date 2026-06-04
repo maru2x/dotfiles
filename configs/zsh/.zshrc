@@ -47,6 +47,3 @@ fi
 if [[ -o interactive ]] && [[ -z "$TMUX" ]] && [[ -t 0 ]] && [[ -t 1 ]] && command -v tmux >/dev/null 2>&1; then
   exec tmux new-session -A -s main
 fi
-
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

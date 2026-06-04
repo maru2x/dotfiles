@@ -1,5 +1,16 @@
 set clipboard=unnamedplus
 
+" Keep the editor area transparent so the terminal background shows through.
+function! s:dotfiles_transparent_background() abort
+  highlight Normal ctermbg=NONE guibg=NONE
+  highlight NormalNC ctermbg=NONE guibg=NONE
+endfunction
+
+augroup dotfiles_transparent_background
+  autocmd!
+  autocmd VimEnter,ColorScheme * call <SID>dotfiles_transparent_background()
+augroup END
+
 let g:dotfiles_ime_off_command = expand('~/dotfiles/bin/ime-off')
 
 function! s:dotfiles_ime_off() abort

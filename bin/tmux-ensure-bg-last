@@ -1,0 +1,44 @@
+#!/usr/bin/env sh
+# Keep the hidden bg buffer window at the highest window index.
+
+session="${1:-$(tmux display-message -p '#{session_name}')}"
+[ -n "$session" ] || exit 0
+
+session_id=$(tmux display-message -p -t "$session" '#{session_id}' 2>/dev/null) || exit 0
+lock="dotfiles-bg-last-${session_id#\$}"
+
+tmux wait-for -L "$lock" || exit 0
+trap 'tmux wait-for -U "$lock"' EXIT HUP INT TERM
+
+windows=$(tmux list-windows -t "$session_id" -F '#{window_id} #{window_index} #{window_name}' 2>/dev/null) ||
+  exit 0
+
+bg_window_id=$(printf '%s\n' "$windows" | awk '$3 == "bg" { print $1; exit }')
+if [ -z "$bg_window_id" ]; then
+  tmux new-window -d -n bg -t "${session_id}:" || exit 0
+  tmux set-window-option -t "${session_id}:bg" automatic-rename off || exit 0
+  windows=$(tmux list-windows -t "$session_id" -F '#{window_id} #{window_index} #{window_name}' 2>/dev/null) ||
+    exit 0
+  bg_window_id=$(printf '%s\n' "$windows" | awk '$3 == "bg" { print $1; exit }')
+  [ -n "$bg_window_id" ] || exit 0
+fi
+
+bg_index=$(printf '%s\n' "$windows" | awk '$1 == id { print $2; exit }' id="$bg_window_id")
+last_index=$(printf '%s\n' "$windows" | awk '$2 > max { max = $2 } END { print max }')
+active_window_id=$(tmux display-message -p -t "$session_id" '#{window_id}')
+
+if [ "$active_window_id" = "$bg_window_id" ]; then
+  active_window_id=$(printf '%s\n' "$windows" |
+    awk '$3 != "bg" && $2 >= max { max = $2; id = $1 } END { print id }')
+fi
+
+if [ "$bg_index" = "$last_index" ]; then
+  [ -n "$active_window_id" ] && tmux select-window -t "$active_window_id"
+  exit 0
+fi
+
+target_index=$((last_index + 1))
+
+tmux move-window -s "$bg_window_id" -t "${session_id}:$target_index" &&
+  tmux move-window -r -t "${session_id}:" &&
+  { [ -z "$active_window_id" ] || tmux select-window -t "$active_window_id"; }

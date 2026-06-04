@@ -55,10 +55,10 @@ bgウィンドウはセッション内の非表示バッファ領域。ユーザ
 
 ### bgウィンドウ
 
-各セッションに `bg` という名前のウィンドウが自動作成される。`automatic-rename` は無効にして名前を固定している。
+各セッションに `bg` という名前のウィンドウが自動作成される。`automatic-rename` は無効にして名前を固定し、常に末尾のウィンドウ番号へ移動する。
 
-- セッション作成時: `set-hook session-created` で自動作成
-- 設定読み込み時: `run-shell` で存在チェック → なければ作成
+- セッション作成時: `set-hook session-created` から `tmux-ensure-bg-last` を実行して自動作成
+- ウィンドウのリンク・リンク解除・選択変更後: `tmux-ensure-bg-last` で `bg` を末尾へ移動し、`bg` が選択された場合は通常ウィンドウへ戻る
 
 ### フォーマット展開の制約
 
@@ -91,6 +91,7 @@ bg ウィンドウのペイン一覧を fzf で表示
 | `bin/fzf-buffer-popup` | prefix+b のラッパー。run-shell → display-popup への値の橋渡し |
 | `bin/fzf-buffer` | bgペイン一覧をfzfで表示してswap |
 | `bin/tmux-kill-buffer` | 現在ペインをjoin-paneでbgへ退避 |
+| `bin/tmux-ensure-bg-last` | bgウィンドウを末尾のウィンドウ番号へ移動 |
 | `bin/tmux-paste` | システムクリップボードをbracket pasteで貼り付け |
 
 ## window 番号の詰め直し

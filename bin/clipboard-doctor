@@ -52,8 +52,11 @@ print_var "WSL_DISTRO_NAME" "${WSL_DISTRO_NAME:-}"
 print_var "SSH_CONNECTION" "${SSH_CONNECTION:-}"
 print_var "DOTFILES_CLIPBOARD_BACKEND" "${DOTFILES_CLIPBOARD_BACKEND:-auto}"
 print_var "DOTFILES_CLIPBOARD_DEBUG" "${DOTFILES_CLIPBOARD_DEBUG:-0}"
+print_var "DOTFILES_CLIPBOARD_TIMEOUT" "${DOTFILES_CLIPBOARD_TIMEOUT:-2}"
 
 printf '\n== Command Availability ==\n'
+print_command_status timeout
+print_command_status gtimeout
 print_command_status pbcopy
 print_command_status pbpaste
 print_command_status wl-copy
@@ -62,12 +65,18 @@ print_command_status xclip
 print_command_status xsel
 print_command_status clip.exe
 print_command_status powershell.exe
+print_command_status tmux
 
 printf '\n== Resolution ==\n'
 print_backend_resolution copy
 print_backend_resolution paste
 
 printf '\n== Notes ==\n'
-printf '%s\n' "GUI Emacs uses native clipboard first and falls back to these helpers on failure."
+printf '%s\n' "GUI Emacs uses native clipboard integration and falls back to helpers only on an actual error."
 printf '%s\n' "Terminal Emacs and tmux shell workflows use these helpers directly."
 printf '%s\n' "tmux backend is used as a last resort when no system clipboard is available (e.g. SSH)."
+if clipboard_timeout_command >/dev/null; then
+  printf '%s\n' "Clipboard backend commands are bounded by the configured timeout."
+else
+  printf '%s\n' "No timeout/gtimeout command was found; helper commands cannot be bounded by the shell layer."
+fi

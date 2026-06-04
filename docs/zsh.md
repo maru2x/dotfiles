@@ -12,6 +12,7 @@ configs/zsh/
     03-other.zsh           # 環境変数・pyenv・コマンドライン keybind
     04-ssh-agent.zsh       # ssh-agent の再利用 / 起動 / 鍵の自動ロード
     05-fzf.zsh             # fzf 設定
+    06-p10k-kanagawa-dragon.zsh # tmux と揃えた Powerlevel10k 配色
     techouse.zsh           # Techouse 固有設定（明示フラグ時のみ読み込み）
 ```
 
@@ -25,9 +26,21 @@ configs/zsh/
 4. `~/.config/techouse/enabled` があるときだけ `~/.zsh/techouse.zsh` を読む
 5. `~/dotfiles-th/.zsh/*.zsh` があれば追加で読む
 6. interactive TTY かつ tmux 外なら tmux 自動起動
-7. `~/.p10k.zsh`
 
 日常的な挙動の大半は `~/.zsh/*.zsh` 側で決まる。
+
+## カラーテーマ
+
+Powerlevel10k、zsh-autosuggestions、zsh-syntax-highlighting は tmux と同じ
+Kanagawa Dragon パレットを使う。
+
+- ディレクトリ: `dragonBlue2`
+- Git clean: `dragonGreen`
+- Git modified / untracked: `dragonYellow`
+- 時刻・補助情報: `dragonAqua` / Dragon の gray 系
+
+プロンプト設定は `06-p10k-kanagawa-dragon.zsh` で管理するため、ユーザー生成の
+`~/.p10k.zsh` は読み込まない。
 
 ## PATH / pyenv
 

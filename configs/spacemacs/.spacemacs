@@ -604,6 +604,10 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
         calendar-daylight-time-zone-name "JST"
         calendar-location-name "Tokyo")
 
+  ;; emacs -nw ではテーマ背景を端末/tmux 側の背景に透過させる
+  (unless (display-graphic-p)
+    (set-face-background 'default "unspecified-bg"))
+
   ;; rbenv系コマンド実行のためshimsパスをemacsに伝達
   (let ((path "/Users/shujimurase/.rbenv/shims"))
     (setenv "PATH" (concat path ":" (getenv "PATH")))
@@ -663,10 +667,11 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
         (error nil))))
 
   (defun my/native-system-clipboard-paste ()
-    "Return text from Emacs native clipboard integration, or nil."
+    "Return (t . VALUE) after native clipboard access, or nil on error.
+VALUE may be nil when no other program has provided new clipboard text."
     (when (functionp my/native-interprogram-paste-function)
       (condition-case nil
-          (funcall my/native-interprogram-paste-function)
+          (cons t (funcall my/native-interprogram-paste-function))
         (error nil))))
 
   (defun my/interprogram-cut-dispatch (text &optional push)
@@ -681,11 +686,14 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
      (t text)))
 
   (defun my/interprogram-paste-dispatch ()
-    "Paste using GUI-native clipboard first, then helper fallback."
-    (or (and (display-graphic-p)
-             (my/native-system-clipboard-paste))
+    "Paste using native GUI clipboard first, then the terminal helper.
+The helper is used in a GUI only when native clipboard access raises an error."
+    (let ((native-result (and (display-graphic-p)
+                              (my/native-system-clipboard-paste))))
+      (if native-result
+          (cdr native-result)
         (and (my/terminal-clipboard-bridge-available-p)
-             (my/system-clipboard-paste))))
+             (my/system-clipboard-paste)))))
 
   (setq select-enable-clipboard t
         select-enable-primary nil

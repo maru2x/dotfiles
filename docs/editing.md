@@ -14,11 +14,12 @@
 - 共通の受け渡し先は system clipboard であり、Emacs kill-ring・Vim register・tmux buffer・zsh kill buffer を直接そろえることは目標にしない
 - Vim / Neovim は `clipboard=unnamedplus` を使い、通常の yank / paste を system clipboard と接続する
 - tmux は copy mode の `y` を tmux buffer と system clipboard の両方へ流し、`prefix + p` で system clipboard を現在ペインへ貼り付ける
-- GUI Emacs は native clipboard を優先し、失敗時だけ `clipboard-copy` / `clipboard-paste` に fallback する
+- GUI Emacs は native clipboard を優先し、実エラー時だけ helper に fallback する
 - terminal Emacs は `clipboard-copy` / `clipboard-paste` を使って system clipboard と接続する
 - zsh のコマンドライン編集では kill buffer の共有は目指さず、必要な共有は terminal / system clipboard 側に任せる
-- helper backend は `DOTFILES_CLIPBOARD_BACKEND=auto|macos|wsl|wayland|x11|xclip|xsel|windows|none` で上書きできる
+- helper backend は `DOTFILES_CLIPBOARD_BACKEND=auto|macos|wsl|wayland|x11|xclip|xsel|windows|tmux|none` で上書きできる
 - helper の試行順や失敗した backend を見たいときは `DOTFILES_CLIPBOARD_DEBUG=1` を付ける
+- helper が backend を待つ時間は `DOTFILES_CLIPBOARD_TIMEOUT` で変更できる
 - 困ったら `bin/clipboard-doctor` を実行して backend 解決結果を確認する
 
 ## 現在のキーバインド方針

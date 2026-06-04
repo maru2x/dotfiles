@@ -14,10 +14,11 @@
 
 ## 設計方針
 
-- GUI Emacs は native clipboard を優先する
+- GUI Emacs は native clipboard を優先し、実エラー時だけ helper に fallback する
 - terminal Emacs は helper script 経由で system clipboard と接続する
 - tmux は copy mode の copy を system clipboard に流し、paste は bracketed paste で流す
 - shell helper が OS / display server 差分を吸収する
+- backend コマンドが応答しなくても editor や shell を永久に待たせない
 - backend 判定が怪しい環境では override できるようにする
 - 壊れたときに診断できるようにする
 
@@ -65,6 +66,7 @@ OSのクリップボード（ブラウザ等、`clipboard-copy` を経由しな�
 - 実行環境を見て候補を並べる
 - backend が使えるかを判定する
 - 失敗したら次の backend へ進む
+- `timeout` または `gtimeout` があれば backend 実行時間を制限する
 - debug ログと override を受け付ける
 
 ### 2. copy / paste helper 層
@@ -76,7 +78,7 @@ OSのクリップボード（ブラウザ等、`clipboard-copy` を経由しな�
 
 ### 3. アプリ統合層
 
-- Emacs: native clipboard と helper を dispatch
+- Emacs: GUI は native clipboard を優先し、terminal は helper を利用
 - tmux: copy mode と `prefix + p` で helper を利用
 - Vim / Neovim: `clipboard=unnamedplus` 側で system clipboard と接続
 
@@ -84,11 +86,12 @@ OSのクリップボード（ブラウザ等、`clipboard-copy` を経由しな�
 
 ### GUI Emacs
 
-- まず Emacs native clipboard を使う
-- native clipboard で失敗した場合だけ helper に fallback する
+- Emacs native clipboard を優先する
+- native clipboard が `nil` を返した場合は「新しい外部 clipboard がない」として扱う
+- native clipboard が実際にエラーを返した場合だけ helper に fallback する
 
 狙い:
-OS の GUI 統合を壊さず、native 側が不調でも helper 側へ逃げられるようにする
+OS の GUI 統合と fallback を維持しつつ、正常な `nil` を失敗扱いして helper を呼ばない
 
 ### `emacs -nw`
 
@@ -123,6 +126,7 @@ shell や terminal app に対して paste の意味を保ったまま貼る
 - `xclip`
 - `xsel`
 - `windows`
+- `tmux`
 
 実際には各 backend が現在の環境で利用可能かを見て採用する。
 
@@ -136,6 +140,7 @@ shell や terminal app に対して paste の意味を保ったまま貼る
 - `xclip`
 - `xsel`
 - `windows`
+- `tmux`
 - `none`
 
 `x11` は `xclip -> xsel` の順で試す別名。
@@ -170,6 +175,19 @@ DOTFILES_CLIPBOARD_BACKEND=none
 DOTFILES_CLIPBOARD_DEBUG=1 bin/clipboard-paste
 ```
 
+### `DOTFILES_CLIPBOARD_TIMEOUT`
+
+backend コマンドを待つ最大秒数。既定値は `2`。
+
+```sh
+DOTFILES_CLIPBOARD_TIMEOUT=1 bin/clipboard-paste
+DOTFILES_CLIPBOARD_TIMEOUT=0.5 bin/clipboard-paste
+```
+
+GNU `timeout` または Homebrew coreutils の `gtimeout` がある場合に有効になる。
+どちらもない環境では時間制限を行えないため、停止防止を有効にするには
+coreutils を導入する。
+
 ## 診断
 
 まず `bin/clipboard-doctor` を実行する。
@@ -184,6 +202,7 @@ bin/clipboard-doctor
 - 関連コマンドの存在
 - 現在の解決結果
 - override が不正かどうか
+- timeout コマンドと設定値
 
 追加で helper 単体を直接試す。
 
@@ -211,8 +230,20 @@ GUI Emacs の copy / paste が不安定
 
 対処:
 
-- helper 単体が動くか確認する
-- native clipboard が失敗すれば helper に fallback する前提なので、helper も生きている必要がある
+- native clipboard と GUI toolkit を調査する
+- helper fallback は native 呼び出しが実際にエラーになった場合だけ動く
+- helper 単体の確認は terminal Emacs や tmux の問題切り分けとして行う
+
+### backend コマンドが応答しない
+
+症状:
+`wl-paste` / `xclip` / `tmux` などが終了せず clipboard 操作が止まる
+
+対処:
+
+- `DOTFILES_CLIPBOARD_DEBUG=1` で timeout と fallback を確認する
+- `DOTFILES_CLIPBOARD_TIMEOUT` を一時的に短くして再現確認する
+- `clipboard-doctor` で `timeout` または `gtimeout` が見つかるか確認する
 
 ### WSL / WSLg で Linux 側 backend と Windows 側 backend が競合する
 
@@ -233,6 +264,15 @@ helper は動くが期待した local machine の clipboard には届かない
 
 - これは clipboard provider ではなく接続モデルの問題
 - `doctor` で見えている `DISPLAY` / `WAYLAND_DISPLAY` / `WSL_INTEROP` を確認する
+
+## 模擬試験
+
+実際の system clipboard を変更せず、mock backend で fallback と timeout を確認できる。
+
+```sh
+tests/clipboard-simulation.sh
+emacs --batch -Q -l tests/emacs-clipboard-dispatch.el
+```
 
 ## 現時点の割り切り
 

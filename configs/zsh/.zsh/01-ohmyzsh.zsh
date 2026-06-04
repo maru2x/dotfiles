@@ -13,6 +13,32 @@ if [ -d "$HOME/.oh-my-zsh" ]; then
     z
   )
 
+  # Kanagawa Dragon palette for interactive helpers.
+  ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#625956'
+  ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+  typeset -gA ZSH_HIGHLIGHT_STYLES
+  ZSH_HIGHLIGHT_STYLES[default]='fg=#c5c9c5'
+  ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=#c4746e'
+  ZSH_HIGHLIGHT_STYLES[reserved-word]='fg=#8992a7'
+  ZSH_HIGHLIGHT_STYLES[suffix-alias]='fg=#8ea4a2'
+  ZSH_HIGHLIGHT_STYLES[global-alias]='fg=#8ea4a2'
+  ZSH_HIGHLIGHT_STYLES[precommand]='fg=#8ea4a2'
+  ZSH_HIGHLIGHT_STYLES[commandseparator]='fg=#7a8382'
+  ZSH_HIGHLIGHT_STYLES[autodirectory]='fg=#8ba4b0'
+  ZSH_HIGHLIGHT_STYLES[path]='fg=#8ba4b0'
+  ZSH_HIGHLIGHT_STYLES[path_pathseparator]='fg=#7a8382'
+  ZSH_HIGHLIGHT_STYLES[path_prefix]='fg=#8ba4b0'
+  ZSH_HIGHLIGHT_STYLES[path_prefix_pathseparator]='fg=#7a8382'
+  ZSH_HIGHLIGHT_STYLES[globbing]='fg=#8992a7'
+  ZSH_HIGHLIGHT_STYLES[history-expansion]='fg=#c4b28a'
+  ZSH_HIGHLIGHT_STYLES[single-hyphen-option]='fg=#c4b28a'
+  ZSH_HIGHLIGHT_STYLES[double-hyphen-option]='fg=#c4b28a'
+  ZSH_HIGHLIGHT_STYLES[single-quoted-argument]='fg=#87a987'
+  ZSH_HIGHLIGHT_STYLES[double-quoted-argument]='fg=#87a987'
+  ZSH_HIGHLIGHT_STYLES[dollar-quoted-argument]='fg=#87a987'
+  ZSH_HIGHLIGHT_STYLES[redirection]='fg=#8ea4a2'
+  ZSH_HIGHLIGHT_STYLES[comment]='fg=#625956'
+
 
   # 追加の補完ディレクトリは compinit より前に登録する
   if [ -d "$HOME/.docker/completions" ]; then
