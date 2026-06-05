@@ -122,6 +122,12 @@ mkdir -p "$HOME"
 
 pass_count=0
 
+if command -v timeout >/dev/null 2>&1 || command -v gtimeout >/dev/null 2>&1; then
+  HAVE_TIMEOUT=1
+else
+  HAVE_TIMEOUT=0
+fi
+
 reset_state() {
   : >"$MOCK_LOG"
   : >"$MOCK_COPY_CAPTURE"
@@ -149,6 +155,11 @@ pass() {
 fail() {
   printf 'not ok - %s\n' "$1" >&2
   exit 1
+}
+
+skip() {
+  pass_count=$((pass_count + 1))
+  printf 'ok %d - %s # SKIP no timeout command available\n' "$pass_count" "$1"
 }
 
 assert_eq() {
@@ -207,20 +218,24 @@ assert_contains "powershell.exe -NoProfile" "$MOCK_LOG" "WSL backend was used"
 assert_not_contains "xclip" "$MOCK_LOG" "WSL must be preferred over X11"
 pass "auto prefers the WSL backend over X11"
 
-reset_state
-WAYLAND_DISPLAY=wayland-0
-XDG_RUNTIME_DIR="$tmpdir/runtime"
-DISPLAY=:1
-export WAYLAND_DISPLAY XDG_RUNTIME_DIR DISPLAY
-MOCK_WL_PASTE_BEHAVIOR=hang
-MOCK_XCLIP_PASTE_OUTPUT=x11-fallback
-DOTFILES_CLIPBOARD_DEBUG=1
-export MOCK_WL_PASTE_BEHAVIOR MOCK_XCLIP_PASTE_OUTPUT DOTFILES_CLIPBOARD_DEBUG
-output=$("$repo_root/bin/clipboard-paste" 2>"$tmpdir/debug.log")
-assert_eq "x11-fallback" "$output" "Timeout fallback output"
-assert_contains "paste backend wayland timed out" "$tmpdir/debug.log" "Timeout was reported"
-assert_contains "xclip -out" "$MOCK_LOG" "X11 fallback was used"
-pass "a hanging Wayland paste times out and falls back to X11"
+if [ "$HAVE_TIMEOUT" -eq 1 ]; then
+  reset_state
+  WAYLAND_DISPLAY=wayland-0
+  XDG_RUNTIME_DIR="$tmpdir/runtime"
+  DISPLAY=:1
+  export WAYLAND_DISPLAY XDG_RUNTIME_DIR DISPLAY
+  MOCK_WL_PASTE_BEHAVIOR=hang
+  MOCK_XCLIP_PASTE_OUTPUT=x11-fallback
+  DOTFILES_CLIPBOARD_DEBUG=1
+  export MOCK_WL_PASTE_BEHAVIOR MOCK_XCLIP_PASTE_OUTPUT DOTFILES_CLIPBOARD_DEBUG
+  output=$("$repo_root/bin/clipboard-paste" 2>"$tmpdir/debug.log")
+  assert_eq "x11-fallback" "$output" "Timeout fallback output"
+  assert_contains "paste backend wayland timed out" "$tmpdir/debug.log" "Timeout was reported"
+  assert_contains "xclip -out" "$MOCK_LOG" "X11 fallback was used"
+  pass "a hanging Wayland paste times out and falls back to X11"
+else
+  skip "a hanging Wayland paste times out and falls back to X11"
+fi
 
 reset_state
 DISPLAY=:1
@@ -247,18 +262,22 @@ assert_eq "" "$output" "Empty clipboard output"
 assert_not_contains "xclip" "$MOCK_LOG" "Empty successful paste must stop fallback"
 pass "an empty clipboard is treated as a successful paste"
 
-reset_state
-WAYLAND_DISPLAY=wayland-0
-XDG_RUNTIME_DIR="$tmpdir/runtime"
-DISPLAY=:1
-export WAYLAND_DISPLAY XDG_RUNTIME_DIR DISPLAY
-MOCK_WL_COPY_BEHAVIOR=hang
-export MOCK_WL_COPY_BEHAVIOR
-printf 'copy-text' | "$repo_root/bin/clipboard-copy"
-assert_eq "copy-text" "$(cat "$MOCK_COPY_CAPTURE")" "Copy fallback content"
-assert_contains "wl-copy " "$MOCK_LOG" "Wayland copy was attempted"
-assert_contains "xclip -in" "$MOCK_LOG" "X11 copy fallback was used"
-pass "a hanging Wayland copy times out and falls back to X11"
+if [ "$HAVE_TIMEOUT" -eq 1 ]; then
+  reset_state
+  WAYLAND_DISPLAY=wayland-0
+  XDG_RUNTIME_DIR="$tmpdir/runtime"
+  DISPLAY=:1
+  export WAYLAND_DISPLAY XDG_RUNTIME_DIR DISPLAY
+  MOCK_WL_COPY_BEHAVIOR=hang
+  export MOCK_WL_COPY_BEHAVIOR
+  printf 'copy-text' | "$repo_root/bin/clipboard-copy"
+  assert_eq "copy-text" "$(cat "$MOCK_COPY_CAPTURE")" "Copy fallback content"
+  assert_contains "wl-copy " "$MOCK_LOG" "Wayland copy was attempted"
+  assert_contains "xclip -in" "$MOCK_LOG" "X11 copy fallback was used"
+  pass "a hanging Wayland copy times out and falls back to X11"
+else
+  skip "a hanging Wayland copy times out and falls back to X11"
+fi
 
 reset_state
 WAYLAND_DISPLAY=wayland-0
@@ -279,18 +298,22 @@ assert_eq "tmux-text" "$output" "tmux paste output"
 assert_contains "tmux save-buffer -" "$MOCK_LOG" "tmux backend was used"
 pass "tmux is used when no system clipboard backend is available"
 
-reset_state
-DOTFILES_CLIPBOARD_BACKEND=wayland
-WAYLAND_DISPLAY=wayland-0
-XDG_RUNTIME_DIR="$tmpdir/runtime"
-export DOTFILES_CLIPBOARD_BACKEND WAYLAND_DISPLAY XDG_RUNTIME_DIR
-MOCK_WL_PASTE_BEHAVIOR=hang
-export MOCK_WL_PASTE_BEHAVIOR
-if "$repo_root/bin/clipboard-paste" >"$tmpdir/output" 2>"$tmpdir/error"; then
-  fail "Explicit hanging backend should fail after timeout"
+if [ "$HAVE_TIMEOUT" -eq 1 ]; then
+  reset_state
+  DOTFILES_CLIPBOARD_BACKEND=wayland
+  WAYLAND_DISPLAY=wayland-0
+  XDG_RUNTIME_DIR="$tmpdir/runtime"
+  export DOTFILES_CLIPBOARD_BACKEND WAYLAND_DISPLAY XDG_RUNTIME_DIR
+  MOCK_WL_PASTE_BEHAVIOR=hang
+  export MOCK_WL_PASTE_BEHAVIOR
+  if "$repo_root/bin/clipboard-paste" >"$tmpdir/output" 2>"$tmpdir/error"; then
+    fail "Explicit hanging backend should fail after timeout"
+  fi
+  assert_not_contains "xclip" "$MOCK_LOG" "Explicit backend must not fall back"
+  pass "an explicit backend fails boundedly without trying other backends"
+else
+  skip "an explicit backend fails boundedly without trying other backends"
 fi
-assert_not_contains "xclip" "$MOCK_LOG" "Explicit backend must not fall back"
-pass "an explicit backend fails boundedly without trying other backends"
 
 reset_state
 DOTFILES_CLIPBOARD_BACKEND=invalid

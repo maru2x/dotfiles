@@ -1,0 +1,58 @@
+#!/usr/bin/env sh
+# tmux キーバインドクイックリファレンス  (Prefix = Ctrl-Space)
+# Usage: tmux-keys           # ターミナルに出力
+#        tmux-keys --popup   # display-popup 内で実行（Enter で閉じる）
+
+popup=0
+[ "${1:-}" = "--popup" ] && popup=1
+
+if [ -t 1 ] || [ "$popup" -eq 1 ]; then
+  bold='\033[1m' cyan='\033[36m' yellow='\033[33m' dim='\033[2m' reset='\033[0m'
+else
+  bold='' cyan='' yellow='' dim='' reset=''
+fi
+
+section() { printf '\n%b%b%s%b\n' "$bold" "$cyan" "$1" "$reset"; }
+row()     { printf "  %b%-20s%b %s\n" "$yellow" "$1" "$reset" "$2"; }
+sep()     { printf '  %s\n' '──────────────────────────────────────────────'; }
+
+section "ペイン・ウィンドウ"
+sep
+row "Prefix /"        "縦分割"
+row "Prefix -"        "横分割"
+row "Prefix h/j/k/l"  "ペイン移動"
+row "Prefix H/J/K/L"  "ペインリサイズ（連続押し可）"
+row "Prefix @"        "他ウィンドウのペインを取り込む"
+row "Prefix s"        "現在ペインを別ウィンドウへ送る"
+row "Prefix f"        "ペイン内文字列検索（n/N で次/前へ）"
+row "Prefix r"        "tmux.conf 再読み込み"
+
+section "バッファ管理 (Spacemacs SPC b * 相当)"
+sep
+row "Prefix b"        "bg ペインを fzf 選択 → 現在位置と swap"
+row "Prefix d"        "bg の最新と入れ替え、自分は bg 送り（外枠維持）"
+row "Prefix x"        "現在ペインを bg 送り（外枠消える）"
+row "Prefix n"        "現在ペインを bg 送り + 同位置に新 zsh"
+row "Prefix X"        "ペイン削除（確認あり）"
+
+section "クリップボード"
+sep
+row "Prefix p"        "クリップボードからペースト"
+row "Prefix P"        "クリップボード履歴 fzf → ペースト"
+
+section "コピーモード  (Prefix + Ctrl-Space で入る)"
+sep
+row "v"               "ビジュアル選択"
+row "V"               "行選択"
+row "Ctrl-v"          "矩形選択"
+row "y"               "ヤンク → tmux バッファ + システムクリップボード"
+row "Ctrl-j / Ctrl-k" "次/前の検索一致へ"
+row "i / Esc"         "コピーモード終了"
+row "Prefix ?"        "このヘルプを表示"
+
+if [ "$popup" -eq 1 ]; then
+  printf '  %b(Enter で閉じる)%b\n\n' "$dim" "$reset"
+  read -r _
+else
+  printf '\n'
+fi

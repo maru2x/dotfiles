@@ -7,6 +7,7 @@ current_session=$(tmux show-option -gqv @fzfbuf_session)
 if ! tmux list-windows -t "$current_session" -F "#{window_name}" 2>/dev/null | grep -qx "bg"; then
   tmux new-window -d -n bg -t "$current_session"
   tmux set-window-option -t "${current_session}:bg" automatic-rename off
+  tmux set-window-option -t "${current_session}:bg" pane-border-status off
 fi
 "$HOME/dotfiles/bin/tmux-ensure-bg-last" "$current_session"
 

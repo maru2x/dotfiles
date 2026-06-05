@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+# prefix+n: 現在のペインをbgへ送りつつ、同じ位置・サイズに新しいzshを用意する
+# run-shellから呼ばれる: $1=pane_id, $2=session, $3=current_path（フォーマット展開済み）
+
+current_pane_id="${1:-$(tmux display-message -p '#{pane_id}')}"
+current_session="${2:-$(tmux display-message -p '#{session_name}')}"
+current_path="${3:-$(tmux display-message -p '#{pane_current_path}')}"
+
+# bgウィンドウが存在しなければ作成
+if ! tmux list-windows -t "$current_session" -F "#{window_name}" 2>/dev/null | grep -qx "bg"; then
+  tmux new-window -d -n bg -t "$current_session"
+  tmux set-window-option -t "${current_session}:bg" automatic-rename off
+  tmux set-window-option -t "${current_session}:bg" pane-border-status off
+fi
+tmux set-window-option -t "${current_session}:bg" pane-border-status off
+
+# bgウィンドウ内に新しいzshを作成し、そのpane_idを取得
+fresh_pane=$(tmux split-window -d -P -F '#{pane_id}' -c "$current_path" -t "${current_session}:bg")
+
+# クロスウィンドウswap: fresh_zshがXの位置・サイズへ、Xがbgへ（fzf-bufferと同じ仕組み）
+tmux swap-pane -d -s "$fresh_pane" -t "$current_pane_id"
+
+# bg内の全ペインを1行に縮める
+tmux list-panes -t "${current_session}:bg" -F '#{pane_id}' | \
+  xargs -I{} tmux resize-pane -t {} -y 1
+
+"$HOME/dotfiles/bin/tmux-ensure-bg-last" "$current_session"

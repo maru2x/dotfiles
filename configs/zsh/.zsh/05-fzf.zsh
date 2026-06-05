@@ -100,12 +100,19 @@ fif() {
     | awk -F: '{print $1":"$2}'
 }
 
+_keys_widget() {
+  zle -I
+  keys
+  zle reset-prompt
+}
+
 zle -N _fzf_file_widget
 zle -N _fzf_dir_widget
 zle -N _fzf_git_branch_widget
 zle -N _fzf_clipboard_history_widget
 zle -N _fzf_clipboard_paste_widget
 zle -N _fzf_fif_widget
+zle -N _keys_widget
 
 # Ctrl+X * バインド（セカンドキーはtmuxのprefix+*と統一）
 bindkey '^Xf' _fzf_file_widget               # ファイル検索
@@ -114,3 +121,4 @@ bindkey '^Xs' _fzf_fif_widget                # ファイル中身検索
 bindkey '^Xg' _fzf_git_branch_widget         # git branch
 bindkey '^XP' _fzf_clipboard_history_widget  # クリップボード履歴
 bindkey '^Xp' _fzf_clipboard_paste_widget    # クリップボードから貼り付け
+bindkey '^Xh' _keys_widget                   # キーバインドヘルプ

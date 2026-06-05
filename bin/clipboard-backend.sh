@@ -35,6 +35,8 @@ clipboard_timeout_command() {
     printf '%s\n' "timeout"
   elif clipboard_has_command gtimeout; then
     printf '%s\n' "gtimeout"
+  else
+    return 1
   fi
 }
 

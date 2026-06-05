@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+# zsh キーバインドクイックリファレンス
+
+if [ -t 1 ]; then
+  bold='\033[1m' cyan='\033[36m' yellow='\033[33m' reset='\033[0m'
+else
+  bold='' cyan='' yellow='' reset=''
+fi
+
+section() { printf '\n%b%b%s%b\n' "$bold" "$cyan" "$1" "$reset"; }
+row()     { printf "  %b%-14s%b %s\n" "$yellow" "$1" "$reset" "$2"; }
+sep()     { printf '  %s\n' '──────────────────────────────────────────────'; }
+
+section "zsh  fzf 統合 (Ctrl-X *)"
+sep
+row "Ctrl-X f"  "ファイル検索 → コマンドラインに挿入"
+row "Ctrl-X d"  "ディレクトリ検索 → cd"
+row "Ctrl-X s"  "ファイル内容 grep (rg + bat プレビュー)"
+row "Ctrl-X g"  "git branch 選択 → checkout"
+row "Ctrl-X P"  "クリップボード履歴から選択して挿入"
+row "Ctrl-X p"  "システムクリップボードから直接挿入"
+row "Ctrl-X h"  "このヘルプを表示"
+row "Ctrl-R"    "コマンド履歴 fzf 逆検索"
+
+printf '\n'
