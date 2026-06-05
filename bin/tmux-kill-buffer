@@ -6,7 +6,9 @@
 current_pane_id="${1:-$(tmux display-message -p '#{pane_id}')}"
 current_session="${2:-$(tmux display-message -p '#{session_name}')}"
 no_fill=0
+kill_mode=0
 [ "$3" = "--no-fill" ] && no_fill=1
+[ "$3" = "--kill"    ] && kill_mode=1
 
 # bgウィンドウが存在しなければ作成（このとき初期シェルが1つ自動生成される）
 fresh_bg=0
@@ -26,11 +28,17 @@ tmux set-window-option -t "${current_session}:bg" pane-border-status off
 
 bg_pane_count=$(tmux list-panes -t "${current_session}:bg" 2>/dev/null | wc -l | tr -d ' ')
 
-# bgに既存ペインがあれば最後に追加されたものをXのスペースに入れる
-# fresh_bg=1のときはnew-windowの初期シェルしかないため対象外とする
-# --no-fillのときは枠を埋めずにそのままbg送り
 # swap-paneはfzf-bufferと同様クロスウィンドウで動作し、サイズ・位置がそのまま保たれる
-if [ "$no_fill" -eq 0 ] && [ "$fresh_bg" -eq 0 ] && [ "$bg_pane_count" -ge 1 ]; then
+if [ "$kill_mode" -eq 1 ]; then
+  # --kill: bgの最新ペインで埋めて、元のペイン（bgに移動済み）をkill
+  if [ "$fresh_bg" -eq 0 ] && [ "$bg_pane_count" -ge 1 ]; then
+    latest_bg_pane=$(tmux list-panes -t "${current_session}:bg" -F '#{pane_id}' | tail -1)
+    tmux swap-pane -d -s "$latest_bg_pane" -t "$current_pane_id"
+    tmux kill-pane -t "$current_pane_id"
+  else
+    tmux kill-pane -t "$current_pane_id"
+  fi
+elif [ "$no_fill" -eq 0 ] && [ "$fresh_bg" -eq 0 ] && [ "$bg_pane_count" -ge 1 ]; then
   # bgに最後に追加されたペイン（list-panesの最後 = 最大インデックス）
   latest_bg_pane=$(tmux list-panes -t "${current_session}:bg" -F '#{pane_id}' | tail -1)
 

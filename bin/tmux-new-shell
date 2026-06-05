@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
-# prefix+n: 現在のペインをbgへ送りつつ、同じ位置・サイズに新しいzshを用意する
-# run-shellから呼ばれる: $1=pane_id, $2=session, $3=current_path（フォーマット展開済み）
+# prefix+n: 現在のペインをbgへ送りつつ、同じ位置・サイズに新しいzshを開く
+# prefix x (join-pane) をベースに実装。bgへのsplit-windowは使わない。
 
 current_pane_id="${1:-$(tmux display-message -p '#{pane_id}')}"
 current_session="${2:-$(tmux display-message -p '#{session_name}')}"
@@ -14,14 +14,53 @@ if ! tmux list-windows -t "$current_session" -F "#{window_name}" 2>/dev/null | g
 fi
 tmux set-window-option -t "${current_session}:bg" pane-border-status off
 
-# bgウィンドウ内に新しいzshを作成し、そのpane_idを取得
-fresh_pane=$(tmux split-window -d -P -F '#{pane_id}' -c "$current_path" -t "${current_session}:bg")
+current_window=$(tmux display-message -p -t "$current_pane_id" '#{window_id}')
+pane_count=$(tmux list-panes -t "$current_window" 2>/dev/null | wc -l | tr -d ' ')
 
-# クロスウィンドウswap: fresh_zshがXの位置・サイズへ、Xがbgへ（fzf-bufferと同じ仕組み）
-tmux swap-pane -d -s "$fresh_pane" -t "$current_pane_id"
+if [ "${pane_count:-0}" -le 1 ]; then
+  # 1ペインのみ: 先にfreshシェルを隣に追加 → Xをbg送り → freshだけ残る
+  # prefix xの「外枠維持」と同じ仕組み
+  tmux split-window -d -c "$current_path" -t "$current_pane_id"
+  tmux join-pane -d -s "$current_pane_id" -t "${current_session}:bg"
+else
+  # 複数ペイン: Xの位置・サイズを記録 → bg送り → 空いたスペースにfreshシェル
+  x_left=$(tmux display-message -p -t "$current_pane_id" '#{pane_left}')
+  x_top=$(tmux display-message -p -t "$current_pane_id" '#{pane_top}')
+  x_width=$(tmux display-message -p -t "$current_pane_id" '#{pane_width}')
+  x_height=$(tmux display-message -p -t "$current_pane_id" '#{pane_height}')
+
+  # Xの直接隣接ペインと方向を特定（右→左→下→上の優先順）
+  nbr=$(tmux list-panes -t "$current_window" \
+    -F '#{pane_id} #{pane_left} #{pane_top} #{pane_width} #{pane_height}' | \
+    awk -v xl="$x_left" -v xt="$x_top" -v xw="$x_width" -v xh="$x_height" \
+    'BEGIN { prio=9; res="" }
+     {
+       id=$1; pl=$2; pt=$3; pw=$4; ph=$5
+       if (pl == xl+xw+1 && pt == xt  && prio > 1) { res="R " id; prio=1 }
+       if (pl+pw+1 == xl  && pt == xt  && prio > 2) { res="L " id; prio=2 }
+       if (pt == xt+xh+1  && pl == xl  && prio > 3) { res="D " id; prio=3 }
+       if (pt+ph+1 == xt  && pl == xl  && prio > 4) { res="U " id; prio=4 }
+     }
+     END { print res }')
+
+  dir=$(printf '%s' "$nbr" | cut -d' ' -f1)
+  nbr_id=$(printf '%s' "$nbr" | cut -d' ' -f2)
+
+  # Xをbgへ送る（prefix xと全く同じ join-pane）
+  tmux join-pane -d -s "$current_pane_id" -t "${current_session}:bg"
+
+  # Xがあったスペースにfreshシェルを配置
+  case "$dir" in
+    R) tmux split-window -bh -l "$x_width"  -d -c "$current_path" -t "$nbr_id" ;;
+    L) tmux split-window -h  -l "$x_width"  -d -c "$current_path" -t "$nbr_id" ;;
+    D) tmux split-window -bv -l "$x_height" -d -c "$current_path" -t "$nbr_id" ;;
+    U) tmux split-window -v  -l "$x_height" -d -c "$current_path" -t "$nbr_id" ;;
+    *) tmux split-window -d -c "$current_path" ;;
+  esac
+fi
 
 # bg内の全ペインを1行に縮める
 tmux list-panes -t "${current_session}:bg" -F '#{pane_id}' | \
-  xargs -I{} tmux resize-pane -t {} -y 1
+  xargs -I{} tmux resize-pane -t {} -y 1 2>/dev/null
 
 "$HOME/dotfiles/bin/tmux-ensure-bg-last" "$current_session"
