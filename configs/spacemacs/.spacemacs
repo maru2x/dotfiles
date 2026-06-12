@@ -32,8 +32,7 @@ This function should only modify configuration layer settings."
 
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   '(markdown
-     csv
+   '(csv
      html
      sql
      (ruby :variables
@@ -82,7 +81,8 @@ This function should only modify configuration layer settings."
                                       kanagawa-themes
                                       mixed-pitch
                                       org-appear
-                                      org-modern)
+                                      org-modern
+                                      markdown-preview-mode)
 
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -793,13 +793,39 @@ The helper is used in a GUI only when native clipboard access raises an error."
       (rename-file source dest 1)
       (revert-buffer)))
 
-  ;; markdown-mode のパフォーマンス改善
-  ;; valign はCJK文字を含む大きなテーブルで編集のたびにピクセル計算が走り極端に重くなるため無効化
+  ;; markdown-preview-mode: GitHub dark CSS + Mermaid.js でローカル完結プレビュー (SPC m v でトグル)
   (with-eval-after-load 'markdown-mode
+    (setq markdown-command "pandoc --syntax-highlighting=none")
     (add-hook 'markdown-mode-hook
               (lambda ()
                 (when (bound-and-true-p valign-mode) (valign-mode -1))
-                (setq-local display-line-numbers nil))))
+                (setq-local display-line-numbers nil)))
+    (setq markdown-preview-stylesheets
+          (list "https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown-dark.min.css"
+                "<style>body{background:#0d1117;padding:2em}.markdown-body{max-width:860px;margin:0 auto}</style>"))
+    (setq markdown-preview-javascript
+          (list "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"))
+    (setq markdown-preview-script-oninit
+          "mermaid.initialize({startOnLoad:false,theme:'dark'});window._mdFirstLoad=true;")
+    (setq markdown-preview-script-onupdate
+          "document.querySelectorAll('pre.mermaid').forEach(function(pre){var div=document.createElement('div');div.className='mermaid';div.textContent=pre.querySelector('code')?pre.querySelector('code').textContent:pre.textContent;pre.replaceWith(div);});mermaid.run({querySelector:'.mermaid'});if(window._mdFirstLoad){$('html,body').stop(true,true).scrollTop(0);window._mdFirstLoad=false;}"))
+
+  (with-eval-after-load 'xwidget
+    (add-to-list 'display-buffer-alist
+                 '("\\*xwidget-webkit"
+                   (display-buffer-in-side-window)
+                   (side . right)
+                   (window-width . 0.45))))
+
+  (defun my/markdown-preview-webkit ()
+    (interactive)
+    (let ((browse-url-browser-function #'xwidget-webkit-browse-url)
+          (src-win (selected-window)))
+      (markdown-preview-mode)
+      (select-window src-win)))
+
+  (spacemacs/set-leader-keys-for-major-mode 'markdown-mode
+    "v" 'my/markdown-preview-webkit)
 
   ;; insert state で Emacs 移動系キーバインドを使えるようにする
   (with-eval-after-load 'evil
@@ -830,6 +856,32 @@ The helper is used in a GUI only when native clipboard access raises an error."
   (with-eval-after-load 'ibuffer
     (evilified-state-evilify-map ibuffer-mode-map
       :mode ibuffer-mode))
+
+  ;; xwidget-webkit を evilified-state で操作できるようにする（grip-mode プレビュー用）
+  ;; xwidget-webkit でウィンドウ分割するとEmacsのバグで表示崩壊するため無効化
+  (defun my/no-split-in-xwidget (orig-fn &rest args)
+    (unless (derived-mode-p 'xwidget-webkit-mode)
+      (apply orig-fn args)))
+  (advice-add 'evil-window-vsplit :around #'my/no-split-in-xwidget)
+  (advice-add 'evil-window-split :around #'my/no-split-in-xwidget)
+  (advice-add 'spacemacs/split-window-right-and-focus :around #'my/no-split-in-xwidget)
+  (advice-add 'spacemacs/split-window-below-and-focus :around #'my/no-split-in-xwidget)
+
+  ;; xwidget-webkit キーバインド: tmux copy-mode-vi と同じ操作感
+  ;; markdown-preview-mode のプレビューペインで使用
+  (with-eval-after-load 'xwidget
+    (evilified-state-evilify-map xwidget-webkit-mode-map
+      :mode xwidget-webkit-mode
+      :bindings
+      "j"         'xwidget-webkit-scroll-up-line
+      "k"         'xwidget-webkit-scroll-down-line
+      (kbd "C-u") 'xwidget-webkit-scroll-down
+      (kbd "C-d") 'xwidget-webkit-scroll-up
+      "G"         'xwidget-webkit-scroll-bottom
+      "r"         'xwidget-webkit-reload
+      "q"         'quit-window)
+    (evil-define-key 'evilified xwidget-webkit-mode-map
+      (kbd "g g") 'xwidget-webkit-scroll-top))
 
   ;; Projectile除外設定
   (with-eval-after-load 'projectile
@@ -944,11 +996,69 @@ This function is called at the very end of Spacemacs initialization."
    ;; Your init file should contain only one such instance.
    ;; If there is more than one, they won't work right.
    '(custom-safe-themes
-     '("01f347a923dd21661412d4c5a7c7655bf17fb311b57ddbdbd6fce87bd7e58de6" "9af2b1c0728d278281d87dc91ead7f5d9f2287b1ed66ec8941e97ab7a6ab73c0" "d2ab3d4f005a9ad4fb789a8f65606c72f30ce9d281a9e42da55f7f4b9ef5bfc6" "832a3471e6e56c42ae430771a14c65b0006412bb8a0eb94fcc4a604587e20b80" "daa27dcbe26a280a9425ee90dc7458d85bd540482b93e9fa94d4f43327128077" "c20728f5c0cb50972b50c929b004a7496d3f2e2ded387bf870f89da25793bb44" default))
+     '("01f347a923dd21661412d4c5a7c7655bf17fb311b57ddbdbd6fce87bd7e58de6"
+       "9af2b1c0728d278281d87dc91ead7f5d9f2287b1ed66ec8941e97ab7a6ab73c0"
+       "d2ab3d4f005a9ad4fb789a8f65606c72f30ce9d281a9e42da55f7f4b9ef5bfc6"
+       "832a3471e6e56c42ae430771a14c65b0006412bb8a0eb94fcc4a604587e20b80"
+       "daa27dcbe26a280a9425ee90dc7458d85bd540482b93e9fa94d4f43327128077"
+       "c20728f5c0cb50972b50c929b004a7496d3f2e2ded387bf870f89da25793bb44" default))
    '(org-agenda-files '("~/Documents/dump/20260121.org"))
    '(package-selected-packages
-     '(sqlite3 a ace-link ace-window add-node-modules-path aggressive-indent alert all-the-icons anaconda-mode auto-compile auto-highlight-symbol auto-yasnippet avy-jump-helm-line blacken bui bundler centered-cursor-mode cfrs chruby clang-format clean-aindent-mode code-cells code-review column-enforce-mode company company-anaconda company-auctex company-emoji company-math company-reftex company-web concurrent consult counsel counsel-css ctable cython-mode dactyl-mode dap-mode deferred define-word devdocs diminish dired-quick-sort disable-mouse dotenv-mode drag-stuff dumb-jump eat edit-indirect editorconfig elisp-def elisp-demos elisp-slime-nav emacsql emmet-mode emoji-cheat-sheet-plus emojify emr enh-ruby-mode epc epl esh-help eshell-prompt-extras eshell-z eval-sexp-fu evil-anzu evil-args evil-cleverparens evil-escape evil-evilified-state evil-exchange evil-goggles evil-iedit-state evil-indent-plus evil-lion evil-lisp-state evil-matchit evil-mc evil-nerd-commenter evil-numbers evil-org evil-surround evil-textobj-line evil-tutor evil-unimpaired evil-visual-mark-mode evil-visualstar expand-region eyebrowse fancy-battery flycheck flycheck-elsa flycheck-package flycheck-pos-tip ggtags gh-md ghub git-link git-messenger git-modes git-timemachine gitignore-templates gntp gnuplot golden-ratio google-translate grizzl haml-mode helm-ag helm-c-yasnippet helm-comint helm-company helm-cscope helm-css-scss helm-descbinds helm-ls-git helm-lsp helm-make helm-mode-manager helm-org helm-org-rifle helm-projectile helm-purpose helm-pydoc helm-swoop helm-xref hide-comnt highlight-indentation highlight-numbers highlight-parentheses hl-todo holy-mode ht htmlize hungry-delete hybrid-mode hydra imenu-list impatient-mode import-js importmagic indent-guide inf-ruby info+ inspector ivy js-doc js2-mode js2-refactor json-mode json-navigator json-reformat json-snatcher kanagawa-themes link-hint list-utils live-py-mode livid-mode llama load-env-vars log4e lorem-ipsum lsp-docker lsp-latex lsp-mode lsp-origami lsp-pyright lsp-treemacs lsp-ui macrostep magit magit-section markdown-mode markdown-toc minitest mixed-pitch multi-line multi-term multiple-cursors nameless nodejs-repl nose npm-mode open-junk-file org-appear org-category-capture org-cliplink org-contrib org-download org-mime org-modern org-pomodoro org-present org-project-capture org-projectile org-rich-yank org-superstar orgit origami overseer package-lint page-break-lines paradox paredit parent-mode password-generator pcre2el persp-mode pet pfuture pip-requirements pipenv pippel pkg-info poetry popup popwin pos-tip posframe powerline prettier-js projectile pug-mode py-isort pydoc pyenv-mode pylookup python-pytest pythonic pyvenv quickrun rainbow-delimiters rake rbenv reformatter restart-emacs robe rspec-mode rubocop rubocopfmt ruby-hash-syntax ruby-refactor ruby-test-mode ruby-tools ruff-format rvm sass-mode scss-mode shell-pop shut-up simple-httpd skewer-mode slim-mode smeargle space-doc spaceline spacemacs-purpose-popwin spacemacs-whitespace-cleanup sphinx-doc spinner sql-indent sqlup-mode string-edit-at-point string-inflection swiper symbol-overlay symon tagedit term-cursor terminal-here tern toc-org transient treemacs treemacs-icons-dired treemacs-magit treemacs-persp treemacs-projectile treepy undo-fu-session uuidgen uv valign vi-tilde-fringe vimrc-mode visual-fill-column vmd-mode volatile-highlights vundo web-beautify web-completion-data web-mode wgrep which-key window-purpose winum with-editor writeroom-mode ws-butler xcscope xref yaml yaml-mode yapfify yasnippet yasnippet-snippets)))
-
+     '(a ace-link ace-window add-node-modules-path aggressive-indent alert
+         all-the-icons anaconda-mode auto-compile auto-highlight-symbol
+         auto-yasnippet avy-jump-helm-line blacken bui bundler
+         centered-cursor-mode cfrs chruby clang-format clean-aindent-mode
+         code-cells code-review column-enforce-mode company company-anaconda
+         company-auctex company-emoji company-math company-reftex company-web
+         concurrent consult counsel counsel-css ctable cython-mode dactyl-mode
+         dap-mode deferred define-word devdocs diminish dired-quick-sort
+         disable-mouse dotenv-mode drag-stuff dumb-jump eat edit-indirect
+         editorconfig elisp-def elisp-demos elisp-slime-nav emacsql emmet-mode
+         emoji-cheat-sheet-plus emojify emr enh-ruby-mode epc epl esh-help
+         eshell-prompt-extras eshell-z eval-sexp-fu evil-anzu evil-args
+         evil-cleverparens evil-escape evil-evilified-state evil-exchange
+         evil-goggles evil-iedit-state evil-indent-plus evil-lion evil-lisp-state
+         evil-matchit evil-mc evil-nerd-commenter evil-numbers evil-org
+         evil-surround evil-textobj-line evil-tutor evil-unimpaired
+         evil-visual-mark-mode evil-visualstar expand-region eyebrowse
+         fancy-battery flycheck flycheck-elsa flycheck-package flycheck-pos-tip
+         ggtags gh-md ghub git-link git-messenger git-modes git-timemachine
+         gitignore-templates gntp gnuplot golden-ratio google-translate grip-mode
+         grizzl haml-mode helm-ag helm-c-yasnippet helm-comint helm-company
+         helm-cscope helm-css-scss helm-descbinds helm-ls-git helm-lsp helm-make
+         helm-mode-manager helm-org helm-org-rifle helm-projectile helm-purpose
+         helm-pydoc helm-swoop helm-xref hide-comnt highlight-indentation
+         highlight-numbers highlight-parentheses hl-todo holy-mode ht htmlize
+         hungry-delete hybrid-mode hydra imenu-list impatient-mode import-js
+         importmagic indent-guide inf-ruby info+ inspector ivy js-doc js2-mode
+         js2-refactor json-mode json-navigator json-reformat json-snatcher
+         kanagawa-themes link-hint list-utils live-py-mode livid-mode llama
+         load-env-vars log4e lorem-ipsum lsp-docker lsp-latex lsp-mode lsp-origami
+         lsp-pyright lsp-treemacs lsp-ui macrostep magit magit-section
+         markdown-mode markdown-preview-mode markdown-toc minitest mixed-pitch
+         multi-line multi-term multiple-cursors nameless nodejs-repl nose npm-mode
+         open-junk-file org-appear org-category-capture org-cliplink org-contrib
+         org-download org-mime org-modern org-pomodoro org-present
+         org-project-capture org-projectile org-rich-yank org-superstar orgit
+         origami overseer package-lint page-break-lines paradox paredit
+         parent-mode password-generator pcre2el persp-mode pet pfuture
+         pip-requirements pipenv pippel pkg-info poetry popup popwin pos-tip
+         posframe powerline prettier-js projectile pug-mode py-isort pydoc
+         pyenv-mode pylookup python-pytest pythonic pyvenv quickrun
+         rainbow-delimiters rake rbenv reformatter restart-emacs robe rspec-mode
+         rubocop rubocopfmt ruby-hash-syntax ruby-refactor ruby-test-mode
+         ruby-tools ruff-format rvm sass-mode scss-mode shell-pop shut-up
+         simple-httpd skewer-mode slim-mode smeargle space-doc spaceline
+         spacemacs-purpose-popwin spacemacs-whitespace-cleanup sphinx-doc spinner
+         sql-indent sqlite3 sqlup-mode string-edit-at-point string-inflection
+         swiper symbol-overlay symon tagedit term-cursor terminal-here tern
+         toc-org transient treemacs treemacs-icons-dired treemacs-magit
+         treemacs-persp treemacs-projectile treepy undo-fu-session uuidgen uv
+         valign vi-tilde-fringe vimrc-mode visual-fill-column vmd-mode
+         volatile-highlights vundo web-beautify web-completion-data web-mode
+         web-server websocket wgrep which-key window-purpose winum with-editor
+         writeroom-mode ws-butler xcscope xref yaml yaml-mode yapfify yasnippet
+         yasnippet-snippets)))
   (custom-set-faces
    ;; custom-set-faces was added by Custom.
    ;; If you edit it by hand, you could mess it up, so be careful.

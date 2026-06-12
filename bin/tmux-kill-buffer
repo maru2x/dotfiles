@@ -46,8 +46,9 @@ elif [ "$no_fill" -eq 0 ] && [ "$fresh_bg" -eq 0 ] && [ "$bg_pane_count" -ge 1 ]
   tmux swap-pane -d -s "$latest_bg_pane" -t "$current_pane_id"
 else
   # no-fill / bgが空 / 初回作成直後：枠を閉じてbg送り
-  # 最後の1ペインなら先に新しいシェルを用意して外枠を維持
-  if [ "$pane_count" -le 1 ]; then
+  # --no-fill かつ1ペインのみ: ウィンドウごと閉じる（split不要）
+  # それ以外で1ペインのみ: 先に新しいシェルを用意して外枠を維持
+  if [ "$pane_count" -le 1 ] && [ "$no_fill" -eq 0 ]; then
     tmux split-window -d -t "$current_pane_id"
   fi
   tmux join-pane -dh -s "$current_pane_id" -t "${current_session}:bg"
