@@ -50,7 +50,7 @@ else
   if [ "$pane_count" -le 1 ]; then
     tmux split-window -d -t "$current_pane_id"
   fi
-  tmux join-pane -d -s "$current_pane_id" -t "${current_session}:bg"
+  tmux join-pane -dh -s "$current_pane_id" -t "${current_session}:bg"
 fi
 
 # bg内の全ペインを1行に縮めてスペースを確保

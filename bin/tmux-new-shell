@@ -21,7 +21,7 @@ if [ "${pane_count:-0}" -le 1 ]; then
   # 1ペインのみ: 先にfreshシェルを隣に追加 → Xをbg送り → freshだけ残る
   # prefix xの「外枠維持」と同じ仕組み
   tmux split-window -d -c "$current_path" -t "$current_pane_id"
-  tmux join-pane -d -s "$current_pane_id" -t "${current_session}:bg"
+  tmux join-pane -dh -s "$current_pane_id" -t "${current_session}:bg"
 else
   # 複数ペイン: Xの位置・サイズを記録 → bg送り → 空いたスペースにfreshシェル
   x_left=$(tmux display-message -p -t "$current_pane_id" '#{pane_left}')
@@ -47,7 +47,7 @@ else
   nbr_id=$(printf '%s' "$nbr" | cut -d' ' -f2)
 
   # Xをbgへ送る（prefix xと全く同じ join-pane）
-  tmux join-pane -d -s "$current_pane_id" -t "${current_session}:bg"
+  tmux join-pane -dh -s "$current_pane_id" -t "${current_session}:bg"
 
   # Xがあったスペースにfreshシェルを配置
   case "$dir" in
