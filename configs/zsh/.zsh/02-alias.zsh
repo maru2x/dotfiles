@@ -14,6 +14,11 @@ alias cdac='cd $HOME/adids/core'
 alias cdat='cd $HOME/adids/testbed'
 alias cdae='cd $HOME/adids/elk'
 alias cdap='cd $HOME/adids/potter'
+alias cds='cd $HOME/sanzu'
+alias cdss='cd $HOME/sanzu/session-console'
+alias cdsr='cd $HOME/sanzu/recon'
+alias cdsp='cd $HOME/sanzu/passkey-lab'
+alias cdsa='cd $HOME/sanzu/auth'
 
 # アプリ起動ショートカット
 alias x='codex'

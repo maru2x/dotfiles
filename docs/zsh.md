@@ -54,7 +54,9 @@ export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 ```
 
-`03-other.zsh` ではあわせて `~/dotfiles/bin` と `/opt/zeek/bin` も PATH に加える。
+`03-other.zsh` ではあわせて `~/.local/go/bin`, `~/go/bin`, `~/dotfiles/bin`, `/opt/zeek/bin` も PATH に加える。
+
+Go はユーザー空間の `~/.local/go` に配置し、`~/go/bin` は `go install` したコマンドの置き場として PATH に加える。
 
 ## timezone
 
@@ -138,6 +140,11 @@ cdac    # ~/adids/core へ移動
 cdat    # ~/adids/testbed へ移動
 cdae    # ~/adids/elk へ移動
 cdap    # ~/adids/potter へ移動
+cds     # ~/sanzu へ移動
+cdss    # ~/sanzu/session-console へ移動
+cdsr    # ~/sanzu/recon へ移動
+cdsp    # ~/sanzu/passkey-lab へ移動
+cdsa    # ~/sanzu/auth へ移動
 ```
 
 ## キーバインド一覧
@@ -203,6 +210,11 @@ cdac            # ~/adids/core
 cdat            # ~/adids/testbed
 cdae            # ~/adids/elk
 cdap            # ~/adids/potter
+cds             # ~/sanzu
+cdss            # ~/sanzu/session-console
+cdsr            # ~/sanzu/recon
+cdsp            # ~/sanzu/passkey-lab
+cdsa            # ~/sanzu/auth
 ```
 
 ### Docker

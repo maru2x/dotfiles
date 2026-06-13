@@ -8,6 +8,14 @@ export EDITOR='nvim'
 export DOTFILES_TIMEZONE="${DOTFILES_TIMEZONE:-Asia/Tokyo}"
 export TZ="$DOTFILES_TIMEZONE"
 
+# Go toolchain and user-installed Go commands
+if [ -d "$HOME/.local/go/bin" ]; then
+    export PATH="$HOME/.local/go/bin:$PATH"
+fi
+if [ -d "$HOME/go/bin" ]; then
+    export PATH="$HOME/go/bin:$PATH"
+fi
+
 # pyenv の初期化
 if [ -d "$HOME/.pyenv" ]; then
     export PYENV_ROOT="$HOME/.pyenv"
