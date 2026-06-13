@@ -5,6 +5,7 @@
 current_pane_id="${1:-$(tmux display-message -p '#{pane_id}')}"
 current_session="${2:-$(tmux display-message -p '#{session_name}')}"
 current_path="${3:-$(tmux display-message -p '#{pane_current_path}')}"
+new_shell="${DOTFILES_TMUX_NEW_SHELL:-zsh}"
 
 # bgウィンドウが存在しなければ作成
 if ! tmux list-windows -t "$current_session" -F "#{window_name}" 2>/dev/null | grep -qx "bg"; then
@@ -20,7 +21,7 @@ pane_count=$(tmux list-panes -t "$current_window" 2>/dev/null | wc -l | tr -d ' 
 if [ "${pane_count:-0}" -le 1 ]; then
   # 1ペインのみ: 先にfreshシェルを隣に追加 → Xをbg送り → freshだけ残る
   # prefix xの「外枠維持」と同じ仕組み
-  tmux split-window -d -c "$current_path" -t "$current_pane_id"
+  new_pane_id=$(tmux split-window -d -P -F '#{pane_id}' -c "$current_path" -t "$current_pane_id" "$new_shell")
   tmux join-pane -dh -s "$current_pane_id" -t "${current_session}:bg"
 else
   # 複数ペイン: Xの位置・サイズを記録 → bg送り → 空いたスペースにfreshシェル
@@ -51,13 +52,15 @@ else
 
   # Xがあったスペースにfreshシェルを配置
   case "$dir" in
-    R) tmux split-window -bh -l "$x_width"  -d -c "$current_path" -t "$nbr_id" ;;
-    L) tmux split-window -h  -l "$x_width"  -d -c "$current_path" -t "$nbr_id" ;;
-    D) tmux split-window -bv -l "$x_height" -d -c "$current_path" -t "$nbr_id" ;;
-    U) tmux split-window -v  -l "$x_height" -d -c "$current_path" -t "$nbr_id" ;;
-    *) tmux split-window -d -c "$current_path" ;;
+    R) new_pane_id=$(tmux split-window -bh -l "$x_width"  -d -P -F '#{pane_id}' -c "$current_path" -t "$nbr_id" "$new_shell") ;;
+    L) new_pane_id=$(tmux split-window -h  -l "$x_width"  -d -P -F '#{pane_id}' -c "$current_path" -t "$nbr_id" "$new_shell") ;;
+    D) new_pane_id=$(tmux split-window -bv -l "$x_height" -d -P -F '#{pane_id}' -c "$current_path" -t "$nbr_id" "$new_shell") ;;
+    U) new_pane_id=$(tmux split-window -v  -l "$x_height" -d -P -F '#{pane_id}' -c "$current_path" -t "$nbr_id" "$new_shell") ;;
+    *) new_pane_id=$(tmux split-window -d -P -F '#{pane_id}' -c "$current_path" "$new_shell") ;;
   esac
 fi
+
+[ -n "$new_pane_id" ] && tmux select-pane -t "$new_pane_id"
 
 # bg内の全ペインを1行に縮める
 tmux list-panes -t "${current_session}:bg" -F '#{pane_id}' | \

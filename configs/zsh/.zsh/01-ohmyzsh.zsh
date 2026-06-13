@@ -5,6 +5,7 @@ if [ -d "$HOME/.oh-my-zsh" ]; then
   export ZSH="$HOME/.oh-my-zsh"
 
   ZSH_THEME=""  # powerlevel10k は brew から直接ロード
+  POWERLEVEL9K_CONFIG_FILE=/dev/null  # ~/.p10k.zsh ではなく 06-p10k-kanagawa-dragon.zsh で管理
 
   # oh-my-zsh バンドル済みプラグインのみ指定
   plugins=(
