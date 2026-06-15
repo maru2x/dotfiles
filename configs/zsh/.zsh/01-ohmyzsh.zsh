@@ -4,8 +4,12 @@
 if [ -d "$HOME/.oh-my-zsh" ]; then
   export ZSH="$HOME/.oh-my-zsh"
 
-  ZSH_THEME=""  # powerlevel10k は brew から直接ロード
-  POWERLEVEL9K_CONFIG_FILE=/dev/null  # ~/.p10k.zsh ではなく 06-p10k-kanagawa-dragon.zsh で管理
+  ZSH_THEME=""  # powerlevel10k はパッケージ配置から直接ロード
+
+  p10k_config_file="$HOME/.zsh/06-p10k-kanagawa-dragon.zsh"
+  if [ -r "$p10k_config_file" ]; then
+    typeset -g POWERLEVEL9K_CONFIG_FILE="$p10k_config_file"
+  fi
 
   # oh-my-zsh バンドル済みプラグインのみ指定
   plugins=(
@@ -48,12 +52,32 @@ if [ -d "$HOME/.oh-my-zsh" ]; then
 
   source "$ZSH/oh-my-zsh.sh"
 
-  # brew でインストールしたプラグインを直接ロード
   if command -v brew >/dev/null 2>&1; then
     brew_prefix="$(brew --prefix)"
+  fi
 
-    [ -f "$brew_prefix/share/powerlevel10k/powerlevel10k.zsh-theme" ] && \
-      source "$brew_prefix/share/powerlevel10k/powerlevel10k.zsh-theme"
+  p10k_theme_candidates=()
+  if [ -n "${brew_prefix:-}" ]; then
+    p10k_theme_candidates+=("$brew_prefix/share/powerlevel10k/powerlevel10k.zsh-theme")
+  fi
+  p10k_theme_candidates+=(
+    /home/linuxbrew/.linuxbrew/share/powerlevel10k/powerlevel10k.zsh-theme
+    /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme
+    /usr/local/share/powerlevel10k/powerlevel10k.zsh-theme
+    /usr/share/powerlevel10k/powerlevel10k.zsh-theme
+    /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
+    "$ZSH/custom/themes/powerlevel10k/powerlevel10k.zsh-theme"
+  )
+
+  for p10k_theme in "${p10k_theme_candidates[@]}"; do
+    if [ -r "$p10k_theme" ]; then
+      source "$p10k_theme"
+      break
+    fi
+  done
+
+  # パッケージ管理でインストールしたプラグインを直接ロード
+  if [ -n "${brew_prefix:-}" ]; then
     [ -f "$brew_prefix/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ] && \
       source "$brew_prefix/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
     [ -f "$brew_prefix/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ] && \
@@ -61,4 +85,6 @@ if [ -d "$HOME/.oh-my-zsh" ]; then
     [ -f "$brew_prefix/share/zsh-you-should-use/you-should-use.plugin.zsh" ] && \
       source "$brew_prefix/share/zsh-you-should-use/you-should-use.plugin.zsh"
   fi
+
+  unset p10k_config_file p10k_theme p10k_theme_candidates brew_prefix
 fi

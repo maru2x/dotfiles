@@ -24,71 +24,78 @@ export FZF_CTRL_T_OPTS="
   --preview-window=right:60%:wrap
 "
 
-# fzf - bck-i-search（Ctrl+R）
-eval "$(fzf --zsh)"
+if [[ -o interactive ]] && [[ -t 0 ]] && [[ -t 1 ]] && command -v fzf >/dev/null 2>&1; then
+  # fzf - bck-i-search（Ctrl+R）
+  eval "$(fzf --zsh)"
 
-# Ctrl+T / Alt+C のデフォルトバインドを外して Ctrl+X に統一
-bindkey -r '^T'
-bindkey -r '\ec'
+  # Ctrl+T / Alt+C のデフォルトバインドを外して Ctrl+X に統一
+  bindkey -r '^T'
+  bindkey -r '\ec'
 
-# ========================================
-# bin/fzf-* スクリプトへの薄いラッパー
-# ========================================
+  # ========================================
+  # bin/fzf-* スクリプトへの薄いラッパー
+  # ========================================
 
-_fzf_file_widget() {
-  local selected
-  selected=$(fzf-file) || { zle reset-prompt; return 0; }
-  [[ -z "$selected" ]] && zle reset-prompt && return 0
-  LBUFFER+="$selected"
-  zle reset-prompt
-}
+  _fzf_file_widget() {
+    local selected
+    selected=$(fzf-file) || { zle reset-prompt; return 0; }
+    [[ -z "$selected" ]] && zle reset-prompt && return 0
+    LBUFFER+="$selected"
+    zle reset-prompt
+  }
 
-_fzf_dir_widget() {
-  local dir
-  dir=$(fzf-dir) || { zle reset-prompt; return 0; }
-  [[ -z "$dir" ]] && zle reset-prompt && return 0
-  builtin cd "$dir"
-  zle reset-prompt
-}
+  _fzf_dir_widget() {
+    local dir
+    dir=$(fzf-dir) || { zle reset-prompt; return 0; }
+    [[ -z "$dir" ]] && zle reset-prompt && return 0
+    builtin cd "$dir"
+    zle reset-prompt
+  }
 
-_fzf_git_branch_widget() {
-  local branch
-  branch=$(fzf-git-branch) || { zle reset-prompt; return 0; }
-  [[ -z "$branch" ]] && zle reset-prompt && return 0
-  git checkout "$branch"
-  zle reset-prompt
-}
+  _fzf_git_branch_widget() {
+    local branch
+    branch=$(fzf-git-branch) || { zle reset-prompt; return 0; }
+    [[ -z "$branch" ]] && zle reset-prompt && return 0
+    git checkout "$branch"
+    zle reset-prompt
+  }
 
-_fzf_clipboard_history_widget() {
-  local selected
-  selected=$(fzf-clipboard) || { zle reset-prompt; return 0; }
-  [[ -z "$selected" ]] && zle reset-prompt && return 0
-  LBUFFER+="$selected"
-  zle reset-prompt
-}
+  _fzf_clipboard_history_widget() {
+    local selected
+    selected=$(fzf-clipboard) || { zle reset-prompt; return 0; }
+    [[ -z "$selected" ]] && zle reset-prompt && return 0
+    LBUFFER+="$selected"
+    zle reset-prompt
+  }
 
-_fzf_clipboard_paste_widget() {
-  local content
-  content=$(clipboard-paste 2>/dev/null) || { zle reset-prompt; return 0; }
-  [[ -z "$content" ]] && zle reset-prompt && return 0
-  LBUFFER+="$content"
-  zle reset-prompt
-}
+  _fzf_clipboard_paste_widget() {
+    local content
+    content=$(clipboard-paste 2>/dev/null) || { zle reset-prompt; return 0; }
+    [[ -z "$content" ]] && zle reset-prompt && return 0
+    LBUFFER+="$content"
+    zle reset-prompt
+  }
 
-# livegrep検索のみzsh内で維持（インタラクティブなreloadがZLE依存のため）
-_fzf_fif_widget() {
-  local result
-  result=$(fzf --ansi --disabled \
-    --bind 'change:reload:rg --line-number --no-heading --color=always {q} 2>/dev/null || true' \
-    --delimiter=: \
-    --preview 'bat --color=always {1} --highlight-line {2} 2>/dev/null || cat {1}' \
-    --preview-window='right:60%:+{2}-5' \
-    --prompt='grep> ')
-  [[ -n "$result" ]] && LBUFFER+=$(echo "$result" | awk -F: '{print $1":"$2}')
-  zle reset-prompt
-}
+  # livegrep検索のみzsh内で維持（インタラクティブなreloadがZLE依存のため）
+  _fzf_fif_widget() {
+    local result
+    result=$(fzf --ansi --disabled \
+      --bind 'change:reload:rg --line-number --no-heading --color=always {q} 2>/dev/null || true' \
+      --delimiter=: \
+      --preview 'bat --color=always {1} --highlight-line {2} 2>/dev/null || cat {1}' \
+      --preview-window='right:60%:+{2}-5' \
+      --prompt='grep> ')
+    [[ -n "$result" ]] && LBUFFER+=$(echo "$result" | awk -F: '{print $1":"$2}')
+    zle reset-prompt
+  }
+fi
 
 fif() {
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "fzf is not installed"
+    return 127
+  fi
+
   if [[ -z "$1" ]]; then
     echo "Usage: fif <search_term>"
     return 1
@@ -100,25 +107,27 @@ fif() {
     | awk -F: '{print $1":"$2}'
 }
 
-_keys_widget() {
-  zle -I
-  keys
-  zle reset-prompt
-}
+if [[ -o interactive ]] && [[ -t 0 ]] && [[ -t 1 ]] && command -v fzf >/dev/null 2>&1; then
+  _keys_widget() {
+    zle -I
+    keys
+    zle reset-prompt
+  }
 
-zle -N _fzf_file_widget
-zle -N _fzf_dir_widget
-zle -N _fzf_git_branch_widget
-zle -N _fzf_clipboard_history_widget
-zle -N _fzf_clipboard_paste_widget
-zle -N _fzf_fif_widget
-zle -N _keys_widget
+  zle -N _fzf_file_widget
+  zle -N _fzf_dir_widget
+  zle -N _fzf_git_branch_widget
+  zle -N _fzf_clipboard_history_widget
+  zle -N _fzf_clipboard_paste_widget
+  zle -N _fzf_fif_widget
+  zle -N _keys_widget
 
-# Ctrl+X * バインド（セカンドキーはtmuxのprefix+*と統一）
-bindkey '^Xf' _fzf_file_widget               # ファイル検索
-bindkey '^Xd' _fzf_dir_widget                # ディレクトリ移動
-bindkey '^Xs' _fzf_fif_widget                # ファイル中身検索
-bindkey '^Xg' _fzf_git_branch_widget         # git branch
-bindkey '^XP' _fzf_clipboard_history_widget  # クリップボード履歴
-bindkey '^Xp' _fzf_clipboard_paste_widget    # クリップボードから貼り付け
-bindkey '^Xh' _keys_widget                   # キーバインドヘルプ
+  # Ctrl+X * バインド（セカンドキーはtmuxのprefix+*と統一）
+  bindkey '^Xf' _fzf_file_widget               # ファイル検索
+  bindkey '^Xd' _fzf_dir_widget                # ディレクトリ移動
+  bindkey '^Xs' _fzf_fif_widget                # ファイル中身検索
+  bindkey '^Xg' _fzf_git_branch_widget         # git branch
+  bindkey '^XP' _fzf_clipboard_history_widget  # クリップボード履歴
+  bindkey '^Xp' _fzf_clipboard_paste_widget    # クリップボードから貼り付け
+  bindkey '^Xh' _keys_widget                   # キーバインドヘルプ
+fi

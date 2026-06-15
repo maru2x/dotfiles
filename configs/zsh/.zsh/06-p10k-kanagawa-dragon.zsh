@@ -1,7 +1,9 @@
 # ========================================
 # Powerlevel10k: Kanagawa Dragon テーマ
 # ========================================
-if (( $+functions[p10k] )); then
+() {
+  emulate -L zsh
+
   typeset -g POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(
     dir
     vcs
@@ -65,5 +67,7 @@ if (( $+functions[p10k] )); then
   typeset -g POWERLEVEL9K_TIME_FOREGROUND='#8ea4a2'
   typeset -g POWERLEVEL9K_TIME_FORMAT='%D{%H:%M}'
 
-  p10k reload
-fi
+  typeset -g POWERLEVEL9K_CONFIG_FILE=${${(%):-%x}:a}
+
+  (( ! $+functions[p10k] )) || p10k reload
+}
